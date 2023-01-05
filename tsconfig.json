@@ -12,7 +12,9 @@
     "incremental": true,
     "declaration": true,
     "declarationMap": true,
-    "types": []
+    "types": [
+      "@types/jest"
+    ]
   },
   "include": [
     "src/**/*"
