@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+// import chalk from 'chalk';
 import type { Event, Service, LoadContext, Domain } from '@eventcatalog/types';
 import { parse, AsyncAPIDocument } from '@asyncapi/parser';
 import fs from 'fs-extra';
@@ -144,6 +144,7 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
   const totalEvents = data.reduce((sum, { generatedEvents }) => sum + generatedEvents.length, 0);
 
   console.log(
-    chalk.green(`Successfully parsed ${listOfAsyncAPIFilesToParse.length} AsyncAPI file/s. Generated ${totalEvents} events`)
+    // chalk.green(`Successfully parsed ${listOfAsyncAPIFilesToParse.length} AsyncAPI file/s. Generated ${totalEvents} events`)
+    `Successfully parsed ${listOfAsyncAPIFilesToParse.length} AsyncAPI file/s. Generated ${totalEvents} events`
   );
 };
