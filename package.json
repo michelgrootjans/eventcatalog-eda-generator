@@ -6,7 +6,9 @@
   "main": "lb/index.js",
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "build:watch": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watchAll"
   },
   "keywords": [],
   "license": "ISC",
