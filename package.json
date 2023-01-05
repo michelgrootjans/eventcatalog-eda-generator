@@ -3,10 +3,17 @@
   "version": "0.0.1",
   "author": "Michel Grootjans",
   "description": "Plugin for eventcatalog that generates documentation based on asyncapi",
-  "main": "index.js",
+  "main": "lb/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "test": "jest"
   },
   "keywords": [],
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "typescript": "^4.9.4"
+  }
 }
