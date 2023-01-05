@@ -1,1 +1,3 @@
-console.log('hello')
+export default () => {
+    return 1;
+};
