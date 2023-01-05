@@ -1,6 +1,9 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['spec'],
+  roots: [
+      'src',
+      'spec',
+  ],
   setupFilesAfterEnv: ['<rootDir>/spec/matchers/custom_matchers.ts'],
 };

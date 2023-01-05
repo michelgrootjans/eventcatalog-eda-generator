@@ -19,8 +19,6 @@ declare global {
   }
 }
 
-let PROJECT_DIR: string;
-
 const pluginContext: LoadContext = {
   eventCatalogConfig: {},
 };
@@ -30,18 +28,12 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
   let catalogDirectory: string;
 
   beforeAll(async () => {
-    PROJECT_DIR = process.env.PROJECT_DIR;
     await fs.rm(tempDirectory, { recursive: true });
   });
 
   beforeEach(() => {
     catalogDirectory = path.join(tempDirectory, uuid())
-    process.env.PROJECT_DIR = catalogDirectory;
     jest.spyOn(console, 'error').mockImplementation(() => {});
-  });
-
-  afterAll(() => {
-    process.env.PROJECT_DIR = PROJECT_DIR;
   });
 
   describe('plugin', () => {
@@ -66,6 +58,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
 
     it('successfully takes a valid asyncapi file and creates the expected services and events markdown files from it', async () => {
       const options: AsyncAPIPluginOptions = {
+        catalogDirectory,
         pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
       };
 
@@ -108,6 +101,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
     describe('multiple asyncapi files', () => {
       it('successfully takes multiple valid asyncapi files and creates the expected services and events markdown files from it', async () => {
         const options: AsyncAPIPluginOptions = {
+          catalogDirectory,
           pathToSpec: [
             path.join(__dirname, './assets/valid-asyncapi.yml'),
             path.join(__dirname, './assets/valid-asyncapi-2.yml'),
@@ -165,6 +159,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
       describe('versionEvents', () => {
         it('when versionEvents is true, all previous matching events will be versioned before writing the event to the catalog', async () => {
           const options: AsyncAPIPluginOptions = {
+            catalogDirectory,
             pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
             versionEvents: true,
           };
@@ -215,6 +210,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
 
         it('when versionEvents is true and the events and services already have markdown content, that content is used for the new events and services being created', async () => {
           const options: AsyncAPIPluginOptions = {
+            catalogDirectory,
             pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
             versionEvents: true,
           };
@@ -257,6 +253,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
 
         it('when versionEvents is false, all previous matching events will be overriden', async () => {
           const options: AsyncAPIPluginOptions = {
+            catalogDirectory,
             pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
             versionEvents: false,
           };
@@ -309,6 +306,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
       describe('includeLinkToAsyncAPIDoc', () => {
         it('when includeLinkToAsyncAPIDoc is set, an external link will be added in the event', async () => {
           const options: AsyncAPIPluginOptions = {
+            catalogDirectory,
             pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
             externalAsyncAPIUrl: 'https://eventcatalog.dev/events',
           };
@@ -359,6 +357,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
       describe('Custom graph templating', () => {
         it('when options are set Mermaid is ignored and Node Graphs are templated', async () => {
           const options: AsyncAPIPluginOptions = {
+            catalogDirectory,
             pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
             renderMermaidDiagram: false,
             renderNodeGraph: true,
@@ -404,6 +403,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
       describe('In domain AsyncAPI parsing', () => {
         it('Creates a domain with contained services and events when domain options are set', async () => {
           const options: AsyncAPIPluginOptions = {
+            catalogDirectory,
             pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
             renderMermaidDiagram: false,
             renderNodeGraph: true,

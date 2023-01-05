@@ -55,6 +55,7 @@ const parseAsyncAPIFile = async (pathToFile: string, options: AsyncAPIPluginOpti
     renderNodeGraph = false,
     domainName = '',
     domainSummary = '',
+    catalogDirectory = process.env.PROJECT_DIR,
   } = options;
 
   let asyncAPIFile;
@@ -71,12 +72,12 @@ const parseAsyncAPIFile = async (pathToFile: string, options: AsyncAPIPluginOpti
   const service = getServiceFromAsyncDoc(doc);
   const events = getAllEventsFromAsyncDoc(doc, options);
 
-  if (!process.env.PROJECT_DIR) {
+  if (!catalogDirectory) {
     throw new Error('Please provide catalog url (env variable PROJECT_DIR)');
   }
 
   if (domainName) {
-    const { writeDomainToCatalog } = utils({ catalogDirectory: process.env.PROJECT_DIR });
+    const { writeDomainToCatalog } = utils({ catalogDirectory });
 
     const domain: Domain = {
       name: domainName,
@@ -91,7 +92,7 @@ const parseAsyncAPIFile = async (pathToFile: string, options: AsyncAPIPluginOpti
   }
 
   const { writeServiceToCatalog, writeEventToCatalog } = utils({
-    catalogDirectory: domainName ? path.join(process.env.PROJECT_DIR, 'domains', domainName) : process.env.PROJECT_DIR,
+    catalogDirectory: domainName ? path.join(catalogDirectory, 'domains', domainName) : catalogDirectory,
   });
 
   await writeServiceToCatalog(service, {
