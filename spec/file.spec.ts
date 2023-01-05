@@ -16,7 +16,6 @@ beforeAll(async () => {
 let catalogDirectory = TEST_OUTPUT;
 beforeEach(() => {
     catalogDirectory = `${TEST_OUTPUT}/catalog-${uuid()}`;
-    process.env.PROJECT_DIR = catalogDirectory
 });
 
 it('simple import', async () => {
@@ -79,6 +78,7 @@ function importSpecs(catalogDirectory: string, pathToSpecs: string[]) {
         versionEvents: true,
         renderMermaidDiagram: false,
         renderNodeGraph: true,
+        catalogDirectory,
     };
     return plugin(context, options);
 }
