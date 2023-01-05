@@ -1,11 +1,11 @@
 // import chalk from 'chalk';
-import type { Event, Service, LoadContext, Domain } from '@eventcatalog/types';
-import { parse, AsyncAPIDocument } from '@asyncapi/parser';
+import type {Domain, Event, LoadContext, Service} from '@eventcatalog/types';
+import {AsyncAPIDocument, parse} from '@asyncapi/parser';
 import fs from 'fs-extra';
 import path from 'path';
 import utils from '@eventcatalog/utils';
 
-import type { AsyncAPIPluginOptions } from './types';
+import type {AsyncAPIPluginOptions} from './types';
 
 const getServiceFromAsyncDoc = (doc: AsyncAPIDocument): Service => ({
   name: doc.info().title(),
@@ -48,7 +48,7 @@ const getAllEventsFromAsyncDoc = (doc: AsyncAPIDocument, options: AsyncAPIPlugin
   }, []);
 };
 
-const parseAsyncAPIFile = async (asyncAPIFile: string, options: AsyncAPIPluginOptions, copyFrontMatter: boolean) => {
+const parseAsyncAPIFile = async (data: Promise<{ service: Service; events: Event[] }>, options: AsyncAPIPluginOptions, copyFrontMatter: boolean) => {
   const {
     versionEvents = true,
     renderMermaidDiagram = true,
@@ -58,10 +58,7 @@ const parseAsyncAPIFile = async (asyncAPIFile: string, options: AsyncAPIPluginOp
     catalogDirectory = process.env.PROJECT_DIR,
   } = options;
 
-  const doc = await parse(asyncAPIFile);
-
-  const service = getServiceFromAsyncDoc(doc);
-  const events = getAllEventsFromAsyncDoc(doc, options);
+  const {service, events} = await data
 
   if (!catalogDirectory) {
     throw new Error('Please provide catalog url (env variable PROJECT_DIR)');
@@ -135,19 +132,32 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
 
   listOfAsyncAPIFilesToParse.map(readFile)
 
-  // on first parse of files don't copy any frontmatter over.
+
+// on first parse of files don't copy any frontmatter over.
   const parsers = listOfAsyncAPIFilesToParse
       .map(readFile)
+      .map(async (asyncAPIFile: string) => await parse(asyncAPIFile))
+      .map(a => read(a, options))
       .map((specFile, index) => parseAsyncAPIFile(specFile, options, index !== 0));
 
   const data = await Promise.all(parsers);
-  const totalEvents = data.reduce((sum, { generatedEvents }) => sum + generatedEvents.length, 0);
 
+
+  const totalEvents = data.reduce((sum, { generatedEvents }) => sum + generatedEvents.length, 0);
   console.log(
     // chalk.green(`Successfully parsed ${listOfAsyncAPIFilesToParse.length} AsyncAPI file/s. Generated ${totalEvents} events`)
     `Successfully parsed ${listOfAsyncAPIFilesToParse.length} AsyncAPI file/s. Generated ${totalEvents} events`
   );
+
 };
+
+async function read(docPromise: Promise<AsyncAPIDocument>, options: AsyncAPIPluginOptions): Promise<{ service: Service, events: Event[] }> {
+  const doc: AsyncAPIDocument = await docPromise;
+  const service = getServiceFromAsyncDoc(doc);
+  const events = getAllEventsFromAsyncDoc(doc, options);
+
+  return {service, events};
+}
 
 function readFile(path: string) {
   try {
