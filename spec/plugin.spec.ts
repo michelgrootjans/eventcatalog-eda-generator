@@ -435,6 +435,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
             `---
             name: AccountService
             summary: 'This service is in charge of processing user signups'
+            domain: 'My Domain'
             ---
 
             <NodeGraph />`

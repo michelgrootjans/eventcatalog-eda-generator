@@ -7,10 +7,14 @@ import utils from '@eventcatalog/utils';
 
 import type {AsyncAPIPluginOptions} from './types';
 
-const getServiceFromAsyncDoc = (doc: AsyncAPIDocument): Service => ({
-  name: doc.info().title(),
-  summary: doc.info().description() || '',
-});
+const getServiceFromAsyncDoc = (doc: AsyncAPIDocument, {domainName}: AsyncAPIPluginOptions): Service => {
+  let service: Service = {
+    name: doc.info().title(),
+    summary: doc.info().description() || '',
+  };
+  if (domainName) service.domain = domainName;
+  return service;
+};
 
 const getAllEventsFromAsyncDoc = (doc: AsyncAPIDocument, options: AsyncAPIPluginOptions): Event[] => {
   const { externalAsyncAPIUrl } = options;
@@ -48,47 +52,46 @@ const getAllEventsFromAsyncDoc = (doc: AsyncAPIDocument, options: AsyncAPIPlugin
   }, []);
 };
 
-const parseAsyncAPIFile = async (data: Promise<{ service: Service; events: Event[] }>, options: AsyncAPIPluginOptions, copyFrontMatter: boolean) => {
+async function writeService(catalogDirectory: string, service: Service, options: AsyncAPIPluginOptions) {
+  const {writeServiceToCatalog} = utils({
+    catalogDirectory: service.domain ? path.join(catalogDirectory, 'domains', service.domain) : catalogDirectory,
+  });
+  await writeServiceToCatalog(service, {
+    useMarkdownContentFromExistingService: true,
+    renderMermaidDiagram: options.renderMermaidDiagram,
+    renderNodeGraph: options.renderNodeGraph,
+  });
+}
+
+async function writeDomain(catalogDirectory: string, domain: Domain | undefined, options: AsyncAPIPluginOptions) {
+  if (domain) {
+    const {writeDomainToCatalog} = utils({catalogDirectory});
+    await writeDomainToCatalog(domain, {
+      useMarkdownContentFromExistingDomain: true,
+      renderMermaidDiagram: options.renderMermaidDiagram,
+      renderNodeGraph: options.renderNodeGraph,
+    });
+  }
+}
+
+const write = async (data: Promise<{ service: Service, domain: Domain | undefined, events: Event[] }>, options: AsyncAPIPluginOptions, copyFrontMatter: boolean) => {
   const {
     versionEvents = true,
     renderMermaidDiagram = true,
     renderNodeGraph = false,
     domainName = '',
-    domainSummary = '',
     catalogDirectory = '',
   } = options;
 
-  const {service, events} = await data
+  const {service, domain, events} = await data
 
-  if (domainName) {
-    const { writeDomainToCatalog } = utils({ catalogDirectory });
+  await writeDomain(catalogDirectory, domain, options);
+  await writeService(catalogDirectory, service, options);
 
-    const domain: Domain = {
-      name: domainName,
-      summary: domainSummary,
-    };
 
-    await writeDomainToCatalog(domain, {
-      useMarkdownContentFromExistingDomain: true,
-      renderMermaidDiagram,
-      renderNodeGraph,
-    });
-  }
-
-  const { writeServiceToCatalog } = utils({
+  const {writeEventToCatalog } = utils({
     catalogDirectory: domainName ? path.join(catalogDirectory, 'domains', domainName) : catalogDirectory,
   });
-
-  const { getEventFromCatalog, writeEventToCatalog } = utils({
-    catalogDirectory: domainName ? path.join(catalogDirectory, 'domains', domainName) : catalogDirectory,
-  });
-
-  await writeServiceToCatalog(service, {
-    useMarkdownContentFromExistingService: true,
-    renderMermaidDiagram,
-    renderNodeGraph,
-  });
-
   const eventFiles = events.map(async (event: any) => {
     const { schema, ...eventData } = event;
 
@@ -98,7 +101,7 @@ const parseAsyncAPIFile = async (data: Promise<{ service: Service; events: Event
       renderMermaidDiagram,
       renderNodeGraph,
       frontMatterToCopyToNewVersions: {
-        // only do consumers and producers if its not the first file.
+        // only do consumers and producers if it's not the first file.
         consumers: copyFrontMatter,
         producers: copyFrontMatter,
       },
@@ -110,21 +113,22 @@ const parseAsyncAPIFile = async (data: Promise<{ service: Service; events: Event
   });
 
   // write all events to folders
-  Promise.all(eventFiles);
+  await Promise.all(eventFiles);
 
-  return {
-    generatedEvents: events,
-  };
+  return {service, domain, events};
 };
 
 export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
-  options.catalogDirectory = options.catalogDirectory || process.env.PROJECT_DIR;
-
-  if (!options.catalogDirectory) {
-    throw new Error('Please provide catalog url (env variable PROJECT_DIR)');
+  options = {
+    catalogDirectory: process.env.PROJECT_DIR,
+    ...options
   }
 
-  const {pathToSpec} = options;
+  const {pathToSpec, catalogDirectory} = options;
+
+  if (!catalogDirectory) {
+    throw new Error('Please provide catalog url (env variable PROJECT_DIR)');
+  }
 
   const listOfAsyncAPIFilesToParse = Array.isArray(pathToSpec) ? pathToSpec : [pathToSpec];
 
@@ -132,20 +136,16 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
     throw new Error('No file provided in plugin.');
   }
 
-  listOfAsyncAPIFilesToParse.map(readFile)
-
-
-// on first parse of files don't copy any frontmatter over.
   const parsers = listOfAsyncAPIFilesToParse
       .map(readFile)
       .map(async (asyncAPIFile: string) => await parse(asyncAPIFile))
-      .map(a => read(a, options))
-      .map((specFile, index) => parseAsyncAPIFile(specFile, options, index !== 0));
+      .map(document => read(document, options))
+      .map((data, index) => write(data, options, index !== 0));
 
   const data = await Promise.all(parsers);
 
 
-  const totalEvents = data.reduce((sum, { generatedEvents }) => sum + generatedEvents.length, 0);
+  const totalEvents = data.reduce((sum, { events }) => sum + events.length, 0);
   console.log(
     // chalk.green(`Successfully parsed ${listOfAsyncAPIFilesToParse.length} AsyncAPI file/s. Generated ${totalEvents} events`)
     `Successfully parsed ${listOfAsyncAPIFilesToParse.length} AsyncAPI file/s. Generated ${totalEvents} events`
@@ -153,12 +153,21 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
 
 };
 
-async function read(docPromise: Promise<AsyncAPIDocument>, options: AsyncAPIPluginOptions): Promise<{ service: Service, events: Event[] }> {
-  const doc: AsyncAPIDocument = await docPromise;
-  const service = getServiceFromAsyncDoc(doc);
-  const events = getAllEventsFromAsyncDoc(doc, options);
+async function read(docPromise: Promise<AsyncAPIDocument>, options: AsyncAPIPluginOptions): Promise<{ service: Service, domain: Domain | undefined, events: Event[] }> {
+  const document: AsyncAPIDocument = await docPromise;
+  const domain = getDomainFromAsyncOptions(options);
+  const service = getServiceFromAsyncDoc(document, options);
+  const events = getAllEventsFromAsyncDoc(document, options);
+  return {service, domain, events};
+}
 
-  return {service, events};
+function getDomainFromAsyncOptions({domainName = '', domainSummary = ''}: AsyncAPIPluginOptions): Domain | undefined {
+  if (domainName) {
+    return {
+      name: domainName,
+      summary: domainSummary,
+    };
+  }
 }
 
 function readFile(path: string) {
