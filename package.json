@@ -1,6 +1,6 @@
 {
   "name": "eventcatalog-eda-generator",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "Michel Grootjans",
   "description": "Plugin for eventcatalog that generates documentation based on asyncapi",
   "main": "lib/index.js",
@@ -12,7 +12,6 @@
   },
   "keywords": [],
   "license": "ISC",
-  "files": ["/lib", "package.json"],
   "dependencies": {
     "@asyncapi/parser": "^1.17.2",
     "@eventcatalog/utils": "^0.2.0",
