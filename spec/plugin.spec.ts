@@ -11,14 +11,6 @@ import plugin from '../src';
 
 import type { AsyncAPIPluginOptions } from '../types';
 
-declare global {
-  namespace jest {
-    interface Matchers<R> {
-      toMatchMarkdown(expect: string): R;
-    }
-  }
-}
-
 const pluginContext: LoadContext = {
   eventCatalogConfig: {},
 };
@@ -27,9 +19,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
   const tempDirectory = path.join(__dirname, '..', 'tmp')
   let catalogDirectory: string;
 
-  beforeAll(async () => {
-    await fs.rm(tempDirectory, { recursive: true });
-  });
+  beforeAll(async () => await fs.rm(tempDirectory, {recursive: true}));
 
   beforeEach(() => {
     catalogDirectory = path.join(tempDirectory, uuid())
@@ -63,9 +53,6 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
       };
 
       await plugin(pluginContext, options);
-
-      // just wait for files to be there in time.
-      await new Promise((r) => setTimeout(r, 200));
 
       const { getEventFromCatalog, getServiceFromCatalog } = utils({ catalogDirectory });
 
@@ -109,9 +96,6 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
         };
 
         await plugin(pluginContext, options);
-
-        // just wait for files to be there in time.
-        await new Promise((r) => setTimeout(r, 200));
 
         const { getEventFromCatalog, getServiceFromCatalog } = utils({ catalogDirectory });
 
@@ -365,9 +349,6 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
 
           await plugin(pluginContext, options);
 
-          // just wait for files to be there in time.
-          await new Promise((r) => setTimeout(r, 200));
-
           const { getEventFromCatalog, getServiceFromCatalog } = utils({ catalogDirectory });
 
           const { raw: eventFile } = getEventFromCatalog('UserSignedUp');
@@ -412,9 +393,6 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
           };
 
           await plugin(pluginContext, options);
-
-          // just wait for files to be there in time.
-          await new Promise((r) => setTimeout(r, 200));
 
           const { getDomainFromCatalog } = utils({ catalogDirectory });
           const { getEventFromCatalog, getServiceFromCatalog } = utils({
