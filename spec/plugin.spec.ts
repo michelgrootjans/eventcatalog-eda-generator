@@ -6,7 +6,7 @@ import utils from '@eventcatalog/utils';
 
 import path from 'path';
 import fs from 'fs-extra';
-import YAML from 'yamljs';
+import {v4 as uuid} from 'uuid';
 import plugin from '../src';
 
 import type { AsyncAPIPluginOptions } from '../types';
@@ -19,39 +19,29 @@ declare global {
   }
 }
 
-let PROJECT_DIR: any;
+let PROJECT_DIR: string;
 
 const pluginContext: LoadContext = {
   eventCatalogConfig: {},
 };
 
-// eslint-disable-next-line import/prefer-default-export
-export const buildMarkdownFile = (frontmatterObject: any, markdown: string) => `---
-${YAML.stringify(frontmatterObject)}---
-${markdown}`;
-
 describe('eventcatalog-plugin-generator-asyncapi', () => {
-  let catalogDirectory = path.join(__dirname, '..', 'tmp');
-  beforeAll(() => {
+  const tempDirectory = path.join(__dirname, '..', 'tmp')
+  let catalogDirectory: string;
+
+  beforeAll(async () => {
     PROJECT_DIR = process.env.PROJECT_DIR;
-    process.env.PROJECT_DIR = catalogDirectory;
+    await fs.rm(tempDirectory, { recursive: true });
   });
 
   beforeEach(() => {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    catalogDirectory = path.join(tempDirectory, uuid())
+    process.env.PROJECT_DIR = catalogDirectory;
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterAll(() => {
     process.env.PROJECT_DIR = PROJECT_DIR;
-  });
-
-  afterEach(() => {
-    try {
-      fs.rmdirSync(catalogDirectory, { recursive: true });
-    } catch (error) {
-      console.log('Nothing to remove');
-    }
   });
 
   describe('plugin', () => {
