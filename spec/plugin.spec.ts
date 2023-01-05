@@ -16,14 +16,19 @@ const pluginContext: LoadContext = {
 };
 
 describe('eventcatalog-plugin-generator-asyncapi', () => {
-  const tempDirectory = path.join(__dirname, '..', 'tmp')
+  const tempDirectory = path.join(__dirname, '..', 'tmp', 'pluginspec')
   let catalogDirectory: string;
 
-  beforeAll(async () => await fs.rm(tempDirectory, {recursive: true}));
+  beforeAll(async () => {
+    try {
+      await fs.rm(tempDirectory, {recursive: true, force: true})
+    } catch {}
+  });
 
   beforeEach(() => {
     catalogDirectory = path.join(tempDirectory, uuid())
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   describe('plugin', () => {
@@ -49,7 +54,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
     it('successfully takes a valid asyncapi file and creates the expected services and events markdown files from it', async () => {
       const options: AsyncAPIPluginOptions = {
         catalogDirectory,
-        pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
+        pathToSpec: path.join(__dirname, './assets/account-service-1.0.0.yml'),
       };
 
       await plugin(pluginContext, options);
@@ -57,7 +62,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
       const { getEventFromCatalog, getServiceFromCatalog } = utils({ catalogDirectory });
 
       const { raw: eventFile } = getEventFromCatalog('UserSignedUp');
-      const { raw: serviceFile } = getServiceFromCatalog('Account Service');
+      const { raw: serviceFile } = getServiceFromCatalog('AccountService');
 
       expect(eventFile).toMatchMarkdown(`
         ---
@@ -65,7 +70,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
           summary: null
           version: 1.0.0
           producers:
-              - 'Account Service'
+              - AccountService
           consumers: []
           externalLinks: []
           badges: []
@@ -77,7 +82,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
 
       expect(serviceFile).toMatchMarkdown(
         `---
-          name: 'Account Service'
+          name: AccountService
           summary: 'This service is in charge of processing user signups'
           ---
 
@@ -90,8 +95,8 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
         const options: AsyncAPIPluginOptions = {
           catalogDirectory,
           pathToSpec: [
-            path.join(__dirname, './assets/valid-asyncapi.yml'),
-            path.join(__dirname, './assets/valid-asyncapi-2.yml'),
+            path.join(__dirname, './assets/account-service-1.0.0.yml'),
+            path.join(__dirname, './assets/users-service-1.0.0.yml'),
           ],
         };
 
@@ -100,8 +105,8 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
         const { getEventFromCatalog, getServiceFromCatalog } = utils({ catalogDirectory });
 
         const { raw: eventFile } = getEventFromCatalog('UserSignedUp');
-        const { raw: serviceFile } = getServiceFromCatalog('Account Service');
-        const { raw: userServiceFile } = getServiceFromCatalog('Users Service');
+        const { raw: serviceFile } = getServiceFromCatalog('AccountService');
+        const { raw: userServiceFile } = getServiceFromCatalog('UsersService');
 
         expect(eventFile).toMatchMarkdown(`
           ---
@@ -109,8 +114,8 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
             summary: null
             version: 1.0.0
             producers:
-              - 'Users Service'
-              - 'Account Service'
+              - UsersService
+              - AccountService
             consumers: []
             externalLinks: []
             badges: []
@@ -122,7 +127,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
 
         expect(serviceFile).toMatchMarkdown(
           `---
-            name: 'Account Service'
+            name: AccountService
             summary: 'This service is in charge of processing user signups'
             ---
   
@@ -130,7 +135,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
         );
         expect(userServiceFile).toMatchMarkdown(
           `---
-            name: 'Users Service'
+            name: UsersService
             summary: 'This service is in charge of users'
             ---
   
@@ -144,7 +149,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
         it('when versionEvents is true, all previous matching events will be versioned before writing the event to the catalog', async () => {
           const options: AsyncAPIPluginOptions = {
             catalogDirectory,
-            pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
+            pathToSpec: path.join(__dirname, './assets/account-service-1.0.0.yml'),
             versionEvents: true,
           };
 
@@ -181,7 +186,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               summary: null
               version: 1.0.0
               producers:
-                  - 'Account Service'
+                  - AccountService
               consumers: []
               externalLinks: []
               badges: []
@@ -195,7 +200,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
         it('when versionEvents is true and the events and services already have markdown content, that content is used for the new events and services being created', async () => {
           const options: AsyncAPIPluginOptions = {
             catalogDirectory,
-            pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
+            pathToSpec: path.join(__dirname, './assets/account-service-1.0.0.yml'),
             versionEvents: true,
           };
 
@@ -226,7 +231,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               summary: null
               version: 1.0.0
               producers:
-                  - 'Account Service'
+                  - AccountService
               consumers: []
               externalLinks: []
               badges: []
@@ -238,7 +243,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
         it('when versionEvents is false, all previous matching events will be overriden', async () => {
           const options: AsyncAPIPluginOptions = {
             catalogDirectory,
-            pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
+            pathToSpec: path.join(__dirname, './assets/account-service-1.0.0.yml'),
             versionEvents: false,
           };
 
@@ -275,7 +280,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               summary: null
               version: 1.0.0
               producers:
-                  - 'Account Service'
+                  - AccountService
               consumers: []
               externalLinks: []
               badges: []
@@ -291,7 +296,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
         it('when includeLinkToAsyncAPIDoc is set, an external link will be added in the event', async () => {
           const options: AsyncAPIPluginOptions = {
             catalogDirectory,
-            pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
+            pathToSpec: path.join(__dirname, './assets/account-service-1.0.0.yml'),
             externalAsyncAPIUrl: 'https://eventcatalog.dev/events',
           };
 
@@ -325,7 +330,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               summary: null
               version: 1.0.0
               producers:
-                  - 'Account Service'
+                  - AccountService
               consumers: []
               externalLinks:
                   - {label: 'View event in AsyncAPI', url: 'https://eventcatalog.dev/events#message-UserSignedUp'}
@@ -342,7 +347,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
         it('when options are set Mermaid is ignored and Node Graphs are templated', async () => {
           const options: AsyncAPIPluginOptions = {
             catalogDirectory,
-            pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
+            pathToSpec: path.join(__dirname, './assets/account-service-1.0.0.yml'),
             renderMermaidDiagram: false,
             renderNodeGraph: true,
           };
@@ -352,7 +357,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
           const { getEventFromCatalog, getServiceFromCatalog } = utils({ catalogDirectory });
 
           const { raw: eventFile } = getEventFromCatalog('UserSignedUp');
-          const { raw: serviceFile } = getServiceFromCatalog('Account Service');
+          const { raw: serviceFile } = getServiceFromCatalog('AccountService');
 
           expect(eventFile).toMatchMarkdown(`
             ---
@@ -360,7 +365,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               summary: null
               version: 1.0.0
               producers:
-                  - 'Account Service'
+                  - AccountService
               consumers: []
               externalLinks: []
               badges: []
@@ -372,7 +377,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
 
           expect(serviceFile).toMatchMarkdown(
             `---
-            name: 'Account Service'
+            name: AccountService
             summary: 'This service is in charge of processing user signups'
             ---
 
@@ -385,7 +390,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
         it('Creates a domain with contained services and events when domain options are set', async () => {
           const options: AsyncAPIPluginOptions = {
             catalogDirectory,
-            pathToSpec: path.join(__dirname, './assets/valid-asyncapi.yml'),
+            pathToSpec: path.join(__dirname, './assets/account-service-1.0.0.yml'),
             renderMermaidDiagram: false,
             renderNodeGraph: true,
             domainName: 'My Domain',
@@ -400,7 +405,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
           });
 
           const { raw: eventFile } = getEventFromCatalog('UserSignedUp');
-          const { raw: serviceFile } = getServiceFromCatalog('Account Service');
+          const { raw: serviceFile } = getServiceFromCatalog('AccountService');
           const { raw: domainFile } = getDomainFromCatalog('My Domain');
 
           expect(eventFile).toMatchMarkdown(`
@@ -409,7 +414,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               summary: null
               version: 1.0.0
               producers:
-                  - 'Account Service'
+                  - AccountService
               consumers: []
               externalLinks: []
               badges: []
@@ -421,7 +426,7 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
 
           expect(serviceFile).toMatchMarkdown(
             `---
-            name: 'Account Service'
+            name: AccountService
             summary: 'This service is in charge of processing user signups'
             ---
 
