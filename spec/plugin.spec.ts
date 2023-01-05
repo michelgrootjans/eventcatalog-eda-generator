@@ -33,19 +33,26 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
 
   describe('plugin', () => {
     it('throws an error when no file has been provided to load within the plugin', async () => {
-      const options: AsyncAPIPluginOptions = { pathToSpec: undefined };
+      const options: AsyncAPIPluginOptions = {
+        catalogDirectory,
+        pathToSpec: undefined,
+      };
 
       await expect(plugin(pluginContext, options)).rejects.toThrow('No file provided in plugin.');
     });
 
     it('throws an error when file has been provided but the file cannot be found', async () => {
-      const options: AsyncAPIPluginOptions = { pathToSpec: path.join(__dirname, 'random-location') };
+      const options: AsyncAPIPluginOptions = {
+        catalogDirectory,
+        pathToSpec: path.join(__dirname, 'random-location'),
+      };
 
       await expect(plugin(pluginContext, options)).rejects.toThrow('Failed to read file with provided path');
     });
 
     it('throws an error when failing to parse AsyncAPI file', async () => {
       const options: AsyncAPIPluginOptions = {
+        catalogDirectory,
         pathToSpec: path.join(__dirname, './assets/invalid-asyncapi.yml'),
       };
       await expect(plugin(pluginContext, options)).rejects.toThrow('There were errors validating the AsyncAPI document.');

@@ -55,14 +55,10 @@ const parseAsyncAPIFile = async (data: Promise<{ service: Service; events: Event
     renderNodeGraph = false,
     domainName = '',
     domainSummary = '',
-    catalogDirectory = process.env.PROJECT_DIR,
+    catalogDirectory = '',
   } = options;
 
   const {service, events} = await data
-
-  if (!catalogDirectory) {
-    throw new Error('Please provide catalog url (env variable PROJECT_DIR)');
-  }
 
   if (domainName) {
     const { writeDomainToCatalog } = utils({ catalogDirectory });
@@ -122,7 +118,13 @@ const parseAsyncAPIFile = async (data: Promise<{ service: Service; events: Event
 };
 
 export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
-  const { pathToSpec } = options;
+  options.catalogDirectory = options.catalogDirectory || process.env.PROJECT_DIR;
+
+  if (!options.catalogDirectory) {
+    throw new Error('Please provide catalog url (env variable PROJECT_DIR)');
+  }
+
+  const {pathToSpec} = options;
 
   const listOfAsyncAPIFilesToParse = Array.isArray(pathToSpec) ? pathToSpec : [pathToSpec];
 
