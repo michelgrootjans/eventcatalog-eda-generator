@@ -48,7 +48,7 @@ const getAllEventsFromAsyncDoc = (doc: AsyncAPIDocument, options: AsyncAPIPlugin
   }, []);
 };
 
-const parseAsyncAPIFile = async (pathToFile: string, options: AsyncAPIPluginOptions, copyFrontMatter: boolean) => {
+const parseAsyncAPIFile = async (asyncAPIFile: string, options: AsyncAPIPluginOptions, copyFrontMatter: boolean) => {
   const {
     versionEvents = true,
     renderMermaidDiagram = true,
@@ -57,15 +57,6 @@ const parseAsyncAPIFile = async (pathToFile: string, options: AsyncAPIPluginOpti
     domainSummary = '',
     catalogDirectory = process.env.PROJECT_DIR,
   } = options;
-
-  let asyncAPIFile;
-
-  try {
-    asyncAPIFile = fs.readFileSync(pathToFile, 'utf-8');
-  } catch (error: any) {
-    console.error(error);
-    throw new Error(`Failed to read file with provided path`);
-  }
 
   const doc = await parse(asyncAPIFile);
 
@@ -91,7 +82,11 @@ const parseAsyncAPIFile = async (pathToFile: string, options: AsyncAPIPluginOpti
     });
   }
 
-  const { writeServiceToCatalog, writeEventToCatalog } = utils({
+  const { writeServiceToCatalog } = utils({
+    catalogDirectory: domainName ? path.join(catalogDirectory, 'domains', domainName) : catalogDirectory,
+  });
+
+  const { getEventFromCatalog, writeEventToCatalog } = utils({
     catalogDirectory: domainName ? path.join(catalogDirectory, 'domains', domainName) : catalogDirectory,
   });
 
@@ -138,8 +133,12 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
     throw new Error('No file provided in plugin.');
   }
 
+  listOfAsyncAPIFilesToParse.map(readFile)
+
   // on first parse of files don't copy any frontmatter over.
-  const parsers = listOfAsyncAPIFilesToParse.map((specFile, index) => parseAsyncAPIFile(specFile, options, index !== 0));
+  const parsers = listOfAsyncAPIFilesToParse
+      .map(readFile)
+      .map((specFile, index) => parseAsyncAPIFile(specFile, options, index !== 0));
 
   const data = await Promise.all(parsers);
   const totalEvents = data.reduce((sum, { generatedEvents }) => sum + generatedEvents.length, 0);
@@ -149,3 +148,12 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
     `Successfully parsed ${listOfAsyncAPIFilesToParse.length} AsyncAPI file/s. Generated ${totalEvents} events`
   );
 };
+
+function readFile(path: string) {
+  try {
+    return fs.readFileSync(path, 'utf-8');
+  } catch (error: any) {
+    console.error(error);
+    throw new Error(`Failed to read file with provided path`);
+  }
+}
