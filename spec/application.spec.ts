@@ -22,7 +22,7 @@ beforeEach(() => {
     catalogDirectory = `${TEST_OUTPUT}/${expect.getState().currentTestName}`;
 });
 
-xit('only producer', async () => {
+it('only producer', async () => {
     await importSpecs(catalogDirectory, [
             './assets/users-service-1.0.0.yml',
         ],
@@ -44,7 +44,7 @@ xit('only producer', async () => {
         ],
     })
 });
-xit('only consumer', async () => {
+it('only consumer', async () => {
     await importSpecs(catalogDirectory, [
             './assets/account-service-1.0.0.yml',
         ],
