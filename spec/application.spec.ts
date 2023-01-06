@@ -22,116 +22,118 @@ beforeEach(() => {
     ({readCatalog} = application(catalogDirectory));
 });
 
-it('only producer', async () => {
-    await importSpecs(catalogDirectory, [
-            './assets/users-service-1.0.0.yml',
-        ],
-        {}
-    );
-    const catalog = readCatalog();
-    expect(catalog.state()).toMatchObject({
-        services: [
-            {
-                name: 'UsersService',
-                summary: 'This service is in charge of users',
-            },
-        ],
-        events: [
-            {
-                name: 'UserSignedUp',
-                producers: ['UsersService'],
-                consumers: [],
-                externalLinks: [],
-                badges: [],
-            }
-        ],
-    })
-});
-it('only consumer', async () => {
-    await importSpecs(catalogDirectory, [
-            './assets/account-service-1.0.0.yml',
-        ],
-        {}
-    );
-    const catalog = readCatalog();
-    expect(catalog.state()).toMatchObject({
-        services: [
-            {
-                name: 'AccountService',
-                summary: 'This service is in charge of processing user signups',
-            },
-        ],
-        events: [
-            {
-                name: 'UserSignedUp',
-                producers: [],
-                consumers: ['AccountService'],
-                externalLinks: [],
-                badges: [],
-            }
-        ],
-    })
-});
-it('producer and consumer', async () => {
-    await importSpecs(catalogDirectory, [
-            './assets/users-service-1.0.0.yml',
-            './assets/account-service-1.0.0.yml',
-        ],
-        {}
-    );
-    const catalog = readCatalog();
-    expect(catalog.state()).toMatchObject({
-        services: [
-            {
-                name: 'AccountService',
-                summary: 'This service is in charge of processing user signups',
-            },
-            {
-                name: 'UsersService',
-                summary: 'This service is in charge of users',
-            },
-        ],
-        events: [
-            {
-                name: 'UserSignedUp',
-                producers: ['UsersService'],
-                consumers: ['AccountService'],
-                externalLinks: [],
-                badges: [],
-            }
-        ],
-    })
-});
-it('producer and consumer - reversed', async () => {
-    await importSpecs(catalogDirectory, [
-            './assets/account-service-1.0.0.yml',
-            './assets/users-service-1.0.0.yml',
-        ],
-        {}
-    );
-    const catalog = readCatalog();
-    expect(catalog.state()).toMatchObject({
-        services: [
-            {
-                name: 'AccountService',
-                summary: 'This service is in charge of processing user signups',
-            },
-            {
-                name: 'UsersService',
-                summary: 'This service is in charge of users',
-            },
-        ],
-        events: [
-            {
-                name: 'UserSignedUp',
-                producers: ['UsersService'],
-                consumers: ['AccountService'],
-                externalLinks: [],
-                badges: [],
-            }
-        ],
-    })
-});
+describe('import new', () => {
+    it('producer', async () => {
+        await importSpecs(catalogDirectory, [
+                './assets/users-service-1.0.0.yml',
+            ],
+            {}
+        );
+        const catalog = readCatalog();
+        expect(catalog.state()).toMatchObject({
+            services: [
+                {
+                    name: 'UsersService',
+                    summary: 'This service is in charge of users',
+                },
+            ],
+            events: [
+                {
+                    name: 'UserSignedUp',
+                    producers: ['UsersService'],
+                    consumers: [],
+                    externalLinks: [],
+                    badges: [],
+                }
+            ],
+        })
+    });
+    it('consumer', async () => {
+        await importSpecs(catalogDirectory, [
+                './assets/account-service-1.0.0.yml',
+            ],
+            {}
+        );
+        const catalog = readCatalog();
+        expect(catalog.state()).toMatchObject({
+            services: [
+                {
+                    name: 'AccountService',
+                    summary: 'This service is in charge of processing user signups',
+                },
+            ],
+            events: [
+                {
+                    name: 'UserSignedUp',
+                    producers: [],
+                    consumers: ['AccountService'],
+                    externalLinks: [],
+                    badges: [],
+                }
+            ],
+        })
+    });
+    it('producer and consumer', async () => {
+        await importSpecs(catalogDirectory, [
+                './assets/users-service-1.0.0.yml',
+                './assets/account-service-1.0.0.yml',
+            ],
+            {}
+        );
+        const catalog = readCatalog();
+        expect(catalog.state()).toMatchObject({
+            services: [
+                {
+                    name: 'AccountService',
+                    summary: 'This service is in charge of processing user signups',
+                },
+                {
+                    name: 'UsersService',
+                    summary: 'This service is in charge of users',
+                },
+            ],
+            events: [
+                {
+                    name: 'UserSignedUp',
+                    producers: ['UsersService'],
+                    consumers: ['AccountService'],
+                    externalLinks: [],
+                    badges: [],
+                }
+            ],
+        })
+    });
+    it('consumer and producer', async () => {
+        await importSpecs(catalogDirectory, [
+                './assets/account-service-1.0.0.yml',
+                './assets/users-service-1.0.0.yml',
+            ],
+            {}
+        );
+        const catalog = readCatalog();
+        expect(catalog.state()).toMatchObject({
+            services: [
+                {
+                    name: 'AccountService',
+                    summary: 'This service is in charge of processing user signups',
+                },
+                {
+                    name: 'UsersService',
+                    summary: 'This service is in charge of users',
+                },
+            ],
+            events: [
+                {
+                    name: 'UserSignedUp',
+                    producers: ['UsersService'],
+                    consumers: ['AccountService'],
+                    externalLinks: [],
+                    badges: [],
+                }
+            ],
+        })
+    });
+})
 
 function context(overrides: Partial<EventCatalogConfig> = {}): LoadContext {
     return {
