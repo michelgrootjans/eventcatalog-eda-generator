@@ -2,12 +2,14 @@ import path from 'path';
 import plugin from '../src';
 import fs from 'fs-extra';
 import {AsyncAPIPluginOptions} from "../src/types";
-import application, {Catalog} from "../src/application";
+import application from "../src/application";
 import {EventCatalogConfig, LoadContext} from "@eventcatalog/types";
+import Catalog from "../src/domain";
 
 const TEST_OUTPUT = './tmp/catalogspec';
 
 let readCatalog: () => Catalog;
+let options: (pathToSpecs: string[], overrides?: Partial<AsyncAPIPluginOptions>) => AsyncAPIPluginOptions;
 
 beforeAll(async () => {
     try {
@@ -19,16 +21,24 @@ beforeAll(async () => {
 let catalogDirectory = TEST_OUTPUT;
 beforeEach(() => {
     catalogDirectory = `${TEST_OUTPUT}/${expect.getState().currentTestName}`;
+    options = buildOptions(catalogDirectory);
     ({readCatalog} = application(catalogDirectory));
+});
+
+it('empty catalog', async () => {
+    const catalog = readCatalog();
+    expect(catalog.state()).toMatchObject({
+        services: [],
+        events: [],
+    })
 });
 
 describe('import new', () => {
     it('producer', async () => {
-        await importSpecs(catalogDirectory, [
-                './assets/users-service-1.0.0.yml',
-            ],
-            {}
-        );
+        await plugin(context(), options([
+            './assets/users-service-1.0.0.yml',
+        ]));
+
         const catalog = readCatalog();
         expect(catalog.state()).toMatchObject({
             services: [
@@ -49,11 +59,10 @@ describe('import new', () => {
         })
     });
     it('consumer', async () => {
-        await importSpecs(catalogDirectory, [
-                './assets/account-service-1.0.0.yml',
-            ],
-            {}
-        );
+        await plugin(context(), options([
+            './assets/account-service-1.0.0.yml',
+        ]));
+
         const catalog = readCatalog();
         expect(catalog.state()).toMatchObject({
             services: [
@@ -74,12 +83,11 @@ describe('import new', () => {
         })
     });
     it('producer and consumer', async () => {
-        await importSpecs(catalogDirectory, [
-                './assets/users-service-1.0.0.yml',
-                './assets/account-service-1.0.0.yml',
-            ],
-            {}
-        );
+        await plugin(context(), options([
+            './assets/users-service-1.0.0.yml',
+            './assets/account-service-1.0.0.yml',
+        ]));
+
         const catalog = readCatalog();
         expect(catalog.state()).toMatchObject({
             services: [
@@ -104,12 +112,11 @@ describe('import new', () => {
         })
     });
     it('consumer and producer', async () => {
-        await importSpecs(catalogDirectory, [
-                './assets/account-service-1.0.0.yml',
-                './assets/users-service-1.0.0.yml',
-            ],
-            {}
-        );
+        await plugin(context(), options([
+            './assets/account-service-1.0.0.yml',
+            './assets/users-service-1.0.0.yml',
+        ]));
+
         const catalog = readCatalog();
         expect(catalog.state()).toMatchObject({
             services: [
@@ -133,6 +140,36 @@ describe('import new', () => {
             ],
         })
     });
+    it('producer in domain', async () => {
+        await plugin(context(), options([
+            './assets/users-service-1.0.0.yml',
+        ], {domainName: "Users", domainSummary: 'Everything related to users'}));
+
+        const catalog = readCatalog();
+        expect(catalog.state()).toMatchObject({
+            domains: [
+                {
+                    name: 'Users',
+                    summary: 'Everything related to users',
+                }
+            ],
+            services: [
+                {
+                    name: 'UsersService',
+                    summary: 'This service is in charge of users',
+                },
+            ],
+            events: [
+                {
+                    name: 'UserSignedUp',
+                    producers: ['UsersService'],
+                    consumers: [],
+                    externalLinks: [],
+                    badges: [],
+                }
+            ],
+        })
+    });
 })
 
 function context(overrides: Partial<EventCatalogConfig> = {}): LoadContext {
@@ -145,7 +182,7 @@ function context(overrides: Partial<EventCatalogConfig> = {}): LoadContext {
     };
 }
 
-const options = (catalogDirectory: string) => (pathToSpecs: string[], overrides: Partial<AsyncAPIPluginOptions> = {}) => ({
+const buildOptions = (catalogDirectory: string) => (pathToSpecs: string[], overrides: Partial<AsyncAPIPluginOptions> = {}) => ({
     pathToSpec: pathToSpecs
         .map(filePath => path.join(__dirname, filePath)),
 
@@ -155,7 +192,3 @@ const options = (catalogDirectory: string) => (pathToSpecs: string[], overrides:
     catalogDirectory,
     ...overrides,
 });
-
-function importSpecs(catalogDirectory: string, pathToSpecs: string[], overrides: Partial<AsyncAPIPluginOptions> = {}) {
-    return plugin(context(), options(catalogDirectory)(pathToSpecs, overrides));
-}

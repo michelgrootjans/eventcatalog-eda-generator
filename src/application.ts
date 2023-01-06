@@ -1,25 +1,10 @@
 import path from "path";
 import fs from "fs-extra";
 import matter from "gray-matter";
+import Catalog from "./domain";
 
 interface FunctionInitInterface {
     catalogDirectory: string;
-}
-
-export class Catalog {
-    private services;
-    private events;
-
-    constructor(services: any[], events: any[]) {
-        this.services = services;
-        this.events = events;
-    }
-
-    state() {
-        let services = this.services.map(s => s.data);
-        let events = this.events.map(e => e.data);
-        return {services, events};
-    }
 }
 
 const readMarkdownFile = (pathToFile: string) => {
@@ -32,10 +17,44 @@ const readMarkdownFile = (pathToFile: string) => {
     };
 };
 
+const getAllDomainsFromCatalog =
+    ({catalogDirectory}: FunctionInitInterface) =>
+        (): any[] => {
+            const domainsDir = path.join(catalogDirectory, 'domains');
+            if (!fs.existsSync(domainsDir)) {
+                return [];
+            }
+            const folders = fs.readdirSync(domainsDir);
+            return folders.map((folder) => {
+                const {raw, ...service}: any = getDomainFromCatalog({catalogDirectory})(folder);
+                return service;
+            });
+        };
+
+const getDomainFromCatalog =
+    ({catalogDirectory}: FunctionInitInterface) =>
+        (domainName: string) => {
+            try {
+                let domainCatalog = path.join(catalogDirectory, 'domains', domainName);
+                let pathToFile = path.join(domainCatalog, 'index.md');
+                const {parsed} = readMarkdownFile(pathToFile);
+                return {
+                    ...parsed,
+                    services: getAllServicesFromCatalog({catalogDirectory: domainCatalog})(),
+                    events: getAllEventsFromCatalog({catalogDirectory: domainCatalog})(),
+                };
+            } catch (error) {
+                return null;
+            }
+        };
+
 const getAllServicesFromCatalog =
     ({catalogDirectory}: FunctionInitInterface) =>
         (): any[] => {
             const servicesDir = path.join(catalogDirectory, 'services');
+            if (!fs.existsSync(servicesDir)) {
+                return [];
+            }
             const folders = fs.readdirSync(servicesDir);
             return folders.map((folder) => {
                 const {raw, ...service}: any = getServiceFromCatalog({catalogDirectory})(folder);
@@ -65,18 +84,24 @@ const getAllEventsFromCatalog =
     ({catalogDirectory}: FunctionInitInterface) =>
         () => {
             const eventsDir = path.join(catalogDirectory, 'events');
+            if (!fs.existsSync(eventsDir)) {
+                return [];
+            }
             const folders = fs.readdirSync(eventsDir);
             const events = folders.map((folder) => getEventFromCatalog({catalogDirectory})(folder));
             return events.filter((event) => event !== null).map(({raw, ...event}: any) => event);
         };
 
 export default (catalogDirectory: string) => {
-    let allServicesFromCatalog = getAllServicesFromCatalog({catalogDirectory});
-    let allEventsFromCatalog = getAllEventsFromCatalog({catalogDirectory});
     const readCatalog = (): Catalog => {
-        let services = allServicesFromCatalog();
-        let events = allEventsFromCatalog();
-        return new Catalog(services, events)
+        if (!fs.existsSync(catalogDirectory)) {
+            return new Catalog({domains: [], services: [], events: []});
+        }
+
+        const domains = getAllDomainsFromCatalog({catalogDirectory})();
+        const services = getAllServicesFromCatalog({catalogDirectory})();
+        const events = getAllEventsFromCatalog({catalogDirectory})();
+        return new Catalog({domains, services, events})
     };
 
     return {readCatalog}
