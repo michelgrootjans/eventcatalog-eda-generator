@@ -12,7 +12,6 @@ const getServiceFromAsyncDoc = (doc: AsyncAPIDocument, {domainName}: AsyncAPIPlu
     name: doc.info().title(),
     summary: doc.info().description() || '',
   };
-  if (domainName) service.domain = domainName;
   return service;
 };
 
@@ -54,7 +53,7 @@ const getAllEventsFromAsyncDoc = (doc: AsyncAPIDocument, options: AsyncAPIPlugin
 
 async function writeService(catalogDirectory: string, service: Service, options: AsyncAPIPluginOptions) {
   const {writeServiceToCatalog} = utils({
-    catalogDirectory: service.domain ? path.join(catalogDirectory, 'domains', service.domain) : catalogDirectory,
+    catalogDirectory: options.domainName ? path.join(catalogDirectory, 'domains', options.domainName) : catalogDirectory,
   });
   await writeServiceToCatalog(service, {
     useMarkdownContentFromExistingService: true,
@@ -87,7 +86,6 @@ const write = async (data: Promise<{ service: Service, domain: Domain | undefine
 
   await writeDomain(catalogDirectory, domain, options);
   await writeService(catalogDirectory, service, options);
-
 
   const {writeEventToCatalog } = utils({
     catalogDirectory: domainName ? path.join(catalogDirectory, 'domains', domainName) : catalogDirectory,
