@@ -133,7 +133,6 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
 
     const parsers = listOfAsyncAPIFilesToParse
         .map(readFile)
-        .map(async (asyncAPIFile: string) => await parse(asyncAPIFile))
         .map(document => read(document, options))
         .map((data, index) => write(data, options, index !== 0));
 
@@ -165,11 +164,13 @@ function getDomainFromAsyncOptions({domainName = '', domainSummary = ''}: AsyncA
     }
 }
 
-function readFile(path: string) {
+async function readFile(path: string) {
+    let rawFile: string;
     try {
-        return fs.readFileSync(path, 'utf-8');
+        rawFile = fs.readFileSync(path, 'utf-8');
     } catch (error: any) {
         console.error(error);
         throw new Error(`Failed to read file with provided path`);
     }
+    return await parse(rawFile);
 }
