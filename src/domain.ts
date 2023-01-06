@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import {Domain, Event, Service} from "@eventcatalog/types";
+import {Domain, Service, Event} from "@eventcatalog/types";
 
 export default class Catalog {
     private domains;
@@ -26,11 +26,8 @@ export default class Catalog {
     }
 
     state() {
-        // @ts-ignore
         let domains = this.domains;
-        // @ts-ignore
         let services = this.services;
-        // @ts-ignore
         let events = this.events;
         return {domains, services, events};
     }
