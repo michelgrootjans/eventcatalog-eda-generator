@@ -4,13 +4,15 @@ import plugin from '../src';
 import fs from 'fs-extra';
 import {glob} from 'glob';
 import {AsyncAPIPluginOptions} from "../src/types";
+import utils from "@eventcatalog/utils";
 
 const TEST_OUTPUT = './tmp/filespec';
 
 beforeAll(async () => {
     try {
         await fs.rm(TEST_OUTPUT, {recursive: true, force: true})
-    } catch {}
+    } catch {
+    }
 })
 
 let catalogDirectory = TEST_OUTPUT;
