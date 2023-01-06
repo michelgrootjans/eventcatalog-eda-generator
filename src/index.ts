@@ -9,7 +9,7 @@ import type {AsyncAPIPluginOptions} from './types';
 import Catalog from "./domain";
 import Application from "./application";
 
-const getServiceFromAsyncDoc = (doc: AsyncAPIDocument, {domainName}: AsyncAPIPluginOptions): Service => {
+const getServiceFromAsyncDoc = (doc: AsyncAPIDocument): Service => {
     return {
         name: doc.info().title(),
         summary: doc.info().description() || '',
@@ -61,15 +61,14 @@ async function writeService(catalogDirectory: string, service: Service, options:
     });
 }
 
-async function writeDomain(catalogDirectory: string, domain: Domain | undefined, options: AsyncAPIPluginOptions) {
-    if (domain) {
-        const {writeDomainToCatalog} = utils({catalogDirectory});
-        await writeDomainToCatalog(domain, {
-            useMarkdownContentFromExistingDomain: true,
-            renderMermaidDiagram: options.renderMermaidDiagram,
-            renderNodeGraph: options.renderNodeGraph,
-        });
-    }
+async function writeDomain(catalogDirectory: string, domain: Domain, options: AsyncAPIPluginOptions) {
+    const {writeDomainToCatalog} = utils({catalogDirectory});
+    const {services, events, ...domainData} = domain;
+    await writeDomainToCatalog(domainData, {
+        useMarkdownContentFromExistingDomain: true,
+        renderMermaidDiagram: options.renderMermaidDiagram,
+        renderNodeGraph: options.renderNodeGraph,
+    });
 }
 
 async function writeEvents(domainDirectory: string, events: Event[], options: AsyncAPIPluginOptions, copyFrontMatter: boolean) {
@@ -162,7 +161,7 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
 
 async function readAsyncApiDocument(document: AsyncAPIDocument, options: AsyncAPIPluginOptions): Promise<{ domain: Domain | undefined; service: Service; events: Event[] }> {
     const domain = getDomainFromAsyncOptions(options);
-    const service = getServiceFromAsyncDoc(document, options);
+    const service = getServiceFromAsyncDoc(document);
     const events = getAllEventsFromAsyncDoc(document, options);
     return {domain, service, events};
 }

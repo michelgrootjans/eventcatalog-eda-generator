@@ -37,9 +37,12 @@ export default class Catalog {
 
     apply({domain, service, events}: { domain: Domain | undefined; service: Service; events: Event[] }) {
         if (domain) {
+            domain.services = [service]
+            domain.events = events
             this.domains = [...this.domains, domain]
         } else {
             this.services = [...this.services, service];
+            this.events = [...this.services, ...events];
         }
     }
 }
