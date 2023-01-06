@@ -102,9 +102,9 @@ async function writeEvents(domainDirectory: string, events: Event[], options: As
     await Promise.all(eventFiles);
 }
 
-const write = async (data: { service: Service; domain: Domain | undefined; events: Event[] }, options: AsyncAPIPluginOptions, copyFrontMatter: boolean, catalog: Catalog) => {
+const write = async (data: { domain: Domain | undefined; service: Service; events: Event[] }, options: AsyncAPIPluginOptions, copyFrontMatter: boolean, catalog: Catalog) => {
     const {catalogDirectory = ''} = options;
-    const {service, domain, events} = data
+    const {domain, service, events} = data
 
     catalog.apply(data)
 

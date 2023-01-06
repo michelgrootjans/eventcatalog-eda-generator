@@ -20,8 +20,9 @@ export default (catalogDirectory: string) => {
 
         const getDomainFromCatalog = (domainName: string) => {
             try {
-                let domainDirectory = path.join(domainsDirectory, domainName);
-                const domain = readMarkdownFile(path.join(domainDirectory, 'index.md'));
+                const domainDirectory = path.join(domainsDirectory, domainName);
+                const {getDomainFromCatalog} = utils({catalogDirectory})
+                const domain = getDomainFromCatalog(domainName);
                 return {
                     ...domain,
                     services: getAllServicesFromCatalog(domainDirectory),
@@ -73,9 +74,9 @@ export default (catalogDirectory: string) => {
             writeServiceToCatalog,
         } = utils({catalogDirectory})
 
-        catalog.state().services.forEach(service => {
+        for (const service of catalog.state().services) {
             writeServiceToCatalog(service, options)
-        })
+        }
     };
 
     return {readCatalog, writeCatalog}

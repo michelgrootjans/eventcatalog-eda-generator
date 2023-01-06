@@ -7,26 +7,37 @@ export default class Catalog {
     private events;
 
     constructor({domains = [], events = [], services = []}: any) {
-        this.domains = domains;
+        // @ts-ignore
+        this.domains = domains.map(d => {
+            // @ts-ignore
+            const services = d.services.map(s => s.data);
+            // @ts-ignore
+            const events = d.events.map(s => s.data);
+            return {
+                ...d.data,
+                services,
+                events,
+            };
+        });
         // @ts-ignore
         this.services = services.map(s => s.data);
-        this.events = events;
+        // @ts-ignore
+        this.events = events.map(s => s.data);
     }
 
     state() {
         // @ts-ignore
-        let domains = this.domains.map(s => s.data);
+        let domains = this.domains;
         // @ts-ignore
-        let services = [...this.services, ..._.flatten(this.domains.map(d => d.services)).map(s => s.data)];
+        let services = this.services;
         // @ts-ignore
-        let events = [...this.events, ..._.flatten(this.domains.map(d => d.events))].map(e => e.data);
+        let events = this.events;
         return {domains, services, events};
     }
 
     apply({domain, service, events}: { domain: Domain | undefined; service: Service; events: Event[] }) {
-        console.log({domain, service, events})
         if (domain) {
-            return;
+            this.domains = [...this.domains, domain]
         } else {
             this.services = [...this.services, service];
         }

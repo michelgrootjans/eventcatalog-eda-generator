@@ -169,21 +169,23 @@ describe('import', () => {
                 {
                     name: 'Users',
                     summary: 'Everything related to users',
+                    services: [
+                        {
+                            name: 'UsersService',
+                            summary: 'This service is in charge of users',
+                        },
+                    ],
+                    events: [
+                        {
+                            name: 'UserSignedUp',
+                            producers: ['UsersService'],
+                            consumers: [],
+                        }
+                    ],
                 }
             ],
-            services: [
-                {
-                    name: 'UsersService',
-                    summary: 'This service is in charge of users',
-                },
-            ],
-            events: [
-                {
-                    name: 'UserSignedUp',
-                    producers: ['UsersService'],
-                    consumers: [],
-                }
-            ],
+            services: [],
+            events: [],
         })
     });
 })
