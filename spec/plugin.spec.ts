@@ -9,7 +9,7 @@ import fs from 'fs-extra';
 import {v4 as uuid} from 'uuid';
 import plugin from '../src';
 
-import type { AsyncAPIPluginOptions } from '../types';
+import type { AsyncAPIPluginOptions } from '../src/types';
 
 const pluginContext: LoadContext = {
   eventCatalogConfig: {},
