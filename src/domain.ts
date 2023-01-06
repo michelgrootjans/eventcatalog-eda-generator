@@ -5,10 +5,10 @@ export default class Catalog {
     private services;
     private events;
 
-    constructor(data: any) {
-        this.domains = data.domains;
-        this.services = data.services;
-        this.events = data.events;
+    constructor({domains = [], events = [], services = []}: any) {
+        this.domains = domains;
+        this.services = services;
+        this.events = events;
     }
 
     state() {
