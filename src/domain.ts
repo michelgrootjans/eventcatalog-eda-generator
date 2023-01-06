@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import {Domain, Service, Event} from "@eventcatalog/types";
 
 export default class Catalog {
