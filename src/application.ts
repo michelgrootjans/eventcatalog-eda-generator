@@ -40,18 +40,9 @@ export default (catalogDirectory: string) => {
     };
 
     const getAllServicesFromCatalog = (catalogDirectory: string): any[] => {
-        const servicesDirectory = path.join(catalogDirectory, 'services');
-
-        const {getServiceFromCatalog} = utils({catalogDirectory})
-
-        if (!fs.existsSync(servicesDirectory)) {
-            return [];
-        }
-        const serviceNames = directoriesIn(servicesDirectory);
-        return serviceNames.map((serviceName) => {
-            const {raw, ...service}: any = getServiceFromCatalog(serviceName);
-            return service;
-        });
+        const {getAllServicesFromCatalog} = utils({catalogDirectory})
+        if (!fs.existsSync(path.join(catalogDirectory, 'services'))) return [];
+        return getAllServicesFromCatalog();
     };
 
     const getAllEventsFromCatalog = (catalogDirectory: string) => {
