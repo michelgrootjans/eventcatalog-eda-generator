@@ -17,36 +17,6 @@ const readMarkdownFile = (pathToFile: string) => {
     };
 };
 
-const getAllDomainsFromCatalog =
-    ({catalogDirectory}: FunctionInitInterface) =>
-        (): any[] => {
-            const domainsDir = path.join(catalogDirectory, 'domains');
-            if (!fs.existsSync(domainsDir)) {
-                return [];
-            }
-            const folders = fs.readdirSync(domainsDir);
-            return folders.map((folder) => {
-                const {raw, ...service}: any = getDomainFromCatalog({catalogDirectory})(folder);
-                return service;
-            });
-        };
-
-const getDomainFromCatalog =
-    ({catalogDirectory}: FunctionInitInterface) =>
-        (domainName: string) => {
-            try {
-                let domainCatalog = path.join(catalogDirectory, 'domains', domainName);
-                let pathToFile = path.join(domainCatalog, 'index.md');
-                const {parsed} = readMarkdownFile(pathToFile);
-                return {
-                    ...parsed,
-                    services: getAllServicesFromCatalog({catalogDirectory: domainCatalog})(),
-                    events: getAllEventsFromCatalog({catalogDirectory: domainCatalog})(),
-                };
-            } catch (error) {
-                return null;
-            }
-        };
 
 const getAllServicesFromCatalog =
     ({catalogDirectory}: FunctionInitInterface) =>
@@ -93,12 +63,40 @@ const getAllEventsFromCatalog =
         };
 
 export default (catalogDirectory: string) => {
+    const domainsDirectory = path.join(catalogDirectory, 'domains');
+
+    const getAllDomainsFromCatalog = (): any[] => {
+        if (!fs.existsSync(domainsDirectory)) return [];
+
+        const domainNames = fs.readdirSync(domainsDirectory);
+        return domainNames.map((domainName) => {
+            const {raw, ...service}: any = getDomainFromCatalog(domainName);
+            return service;
+        });
+    };
+
+    const getDomainFromCatalog = (domainName: string) => {
+        try {
+            let domainDirectory = path.join(domainsDirectory, domainName);
+            let pathToFile = path.join(domainDirectory, 'index.md');
+            const {parsed} = readMarkdownFile(pathToFile);
+            return {
+                ...parsed,
+                services: getAllServicesFromCatalog({catalogDirectory: domainDirectory})(),
+                events: getAllEventsFromCatalog({catalogDirectory: domainDirectory})(),
+            };
+        } catch (error) {
+            return null;
+        }
+    };
+
+
     const readCatalog = (): Catalog => {
         if (!fs.existsSync(catalogDirectory)) {
             return new Catalog({domains: [], services: [], events: []});
         }
 
-        const domains = getAllDomainsFromCatalog({catalogDirectory})();
+        const domains = getAllDomainsFromCatalog();
         const services = getAllServicesFromCatalog({catalogDirectory})();
         const events = getAllEventsFromCatalog({catalogDirectory})();
         return new Catalog({domains, services, events})
