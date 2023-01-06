@@ -86,6 +86,8 @@ async function writeEvents(domainDirectory: string, events: Event[], options: As
                 // only do consumers and producers if it's not the first file.
                 consumers: copyFrontMatter,
                 producers: copyFrontMatter,
+                // owners: true,
+                // externalLinks: true
             },
             schema: {
                 extension: 'json',
