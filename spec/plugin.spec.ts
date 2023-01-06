@@ -76,9 +76,9 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
           name: UserSignedUp
           summary: null
           version: 1.0.0
-          producers:
+          producers: []
+          consumers:
               - AccountService
-          consumers: []
           externalLinks: []
           badges: []
         ---
@@ -122,8 +122,8 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
             version: 1.0.0
             producers:
               - UsersService
+            consumers:
               - AccountService
-            consumers: []
             externalLinks: []
             badges: []
           ---
@@ -192,9 +192,9 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               name: UserSignedUp
               summary: null
               version: 1.0.0
-              producers:
+              producers: []
+              consumers:
                   - AccountService
-              consumers: []
               externalLinks: []
               badges: []
             ---
@@ -237,9 +237,9 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               name: UserSignedUp
               summary: null
               version: 1.0.0
-              producers:
+              producers: []
+              consumers:
                   - AccountService
-              consumers: []
               externalLinks: []
               badges: []
             ---
@@ -286,9 +286,9 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               name: UserSignedUp
               summary: null
               version: 1.0.0
-              producers:
+              producers: []
+              consumers:
                   - AccountService
-              consumers: []
               externalLinks: []
               badges: []
             ---
@@ -336,9 +336,9 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               name: UserSignedUp
               summary: null
               version: 1.0.0
-              producers:
+              producers: []
+              consumers:
                   - AccountService
-              consumers: []
               externalLinks:
                   - {label: 'View event in AsyncAPI', url: 'https://eventcatalog.dev/events#message-UserSignedUp'}
               badges: []
@@ -371,9 +371,9 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               name: UserSignedUp
               summary: null
               version: 1.0.0
-              producers:
+              producers: []
+              consumers:
                   - AccountService
-              consumers: []
               externalLinks: []
               badges: []
             ---
@@ -420,9 +420,9 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               name: UserSignedUp
               summary: null
               version: 1.0.0
-              producers:
+              producers: []
+              consumers:
                   - AccountService
-              consumers: []
               externalLinks: []
               badges: []
             ---

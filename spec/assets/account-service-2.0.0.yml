@@ -5,7 +5,7 @@ info:
   description: This service is in charge of processing user signups
 channels:
   user/signedup:
-    subscribe:
+    publish:
       message:
         $ref: '#/components/messages/UserSignedUp'
 components:
