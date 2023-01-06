@@ -1,14 +1,13 @@
 import path from 'path';
-import {v4 as uuid} from 'uuid';
 import plugin from '../src';
 import fs from 'fs-extra';
-import {glob} from 'glob';
 import {AsyncAPIPluginOptions} from "../src/types";
-import utils from "@eventcatalog/utils";
-import {readCatalog} from "../src/application";
-import exp = require("constants");
+import application, {Catalog} from "../src/application";
+import {EventCatalogConfig, LoadContext} from "@eventcatalog/types";
 
 const TEST_OUTPUT = './tmp/catalogspec';
+
+let readCatalog: () => Catalog;
 
 beforeAll(async () => {
     try {
@@ -20,6 +19,7 @@ beforeAll(async () => {
 let catalogDirectory = TEST_OUTPUT;
 beforeEach(() => {
     catalogDirectory = `${TEST_OUTPUT}/${expect.getState().currentTestName}`;
+    ({readCatalog} = application(catalogDirectory));
 });
 
 it('only producer', async () => {
@@ -28,10 +28,13 @@ it('only producer', async () => {
         ],
         {}
     );
-    const catalog = readCatalog(catalogDirectory);
+    const catalog = readCatalog();
     expect(catalog.state()).toMatchObject({
         services: [
-            {name: 'UsersService'},
+            {
+                name: 'UsersService',
+                summary: 'This service is in charge of users',
+            },
         ],
         events: [
             {
@@ -50,10 +53,13 @@ it('only consumer', async () => {
         ],
         {}
     );
-    const catalog = readCatalog(catalogDirectory);
+    const catalog = readCatalog();
     expect(catalog.state()).toMatchObject({
         services: [
-            {name: 'AccountService'},
+            {
+                name: 'AccountService',
+                summary: 'This service is in charge of processing user signups',
+            },
         ],
         events: [
             {
@@ -73,11 +79,17 @@ it('producer and consumer', async () => {
         ],
         {}
     );
-    const catalog = readCatalog(catalogDirectory);
+    const catalog = readCatalog();
     expect(catalog.state()).toMatchObject({
         services: [
-            {name: 'AccountService'},
-            {name: 'UsersService'},
+            {
+                name: 'AccountService',
+                summary: 'This service is in charge of processing user signups',
+            },
+            {
+                name: 'UsersService',
+                summary: 'This service is in charge of users',
+            },
         ],
         events: [
             {
@@ -97,11 +109,17 @@ it('producer and consumer - reversed', async () => {
         ],
         {}
     );
-    const catalog = readCatalog(catalogDirectory);
+    const catalog = readCatalog();
     expect(catalog.state()).toMatchObject({
         services: [
-            {name: 'AccountService'},
-            {name: 'UsersService'},
+            {
+                name: 'AccountService',
+                summary: 'This service is in charge of processing user signups',
+            },
+            {
+                name: 'UsersService',
+                summary: 'This service is in charge of users',
+            },
         ],
         events: [
             {
@@ -115,22 +133,27 @@ it('producer and consumer - reversed', async () => {
     })
 });
 
-function importSpecs(catalogDirectory: string, pathToSpecs: string[], overrides: Partial<AsyncAPIPluginOptions> = {}) {
-    const context = {
+function context(overrides: Partial<EventCatalogConfig> = {}): LoadContext {
+    return {
         eventCatalogConfig: {
             title: 'test configuration',
             organizationName: 'jest',
+            ...overrides
         }
     };
-    const options: AsyncAPIPluginOptions = {
-        pathToSpec: pathToSpecs
-            .map(filePath => path.join(__dirname, filePath)),
+}
 
-        versionEvents: false,
-        renderMermaidDiagram: false,
-        renderNodeGraph: true,
-        catalogDirectory,
-        ...overrides,
-    };
-    return plugin(context, options);
+const options = (catalogDirectory: string) => (pathToSpecs: string[], overrides: Partial<AsyncAPIPluginOptions> = {}) => ({
+    pathToSpec: pathToSpecs
+        .map(filePath => path.join(__dirname, filePath)),
+
+    versionEvents: false,
+    renderMermaidDiagram: false,
+    renderNodeGraph: true,
+    catalogDirectory,
+    ...overrides,
+});
+
+function importSpecs(catalogDirectory: string, pathToSpecs: string[], overrides: Partial<AsyncAPIPluginOptions> = {}) {
+    return plugin(context(), options(catalogDirectory)(pathToSpecs, overrides));
 }

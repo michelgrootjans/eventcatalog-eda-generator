@@ -2,11 +2,11 @@ import path from "path";
 import fs from "fs-extra";
 import matter from "gray-matter";
 
-export interface FunctionInitInterface {
+interface FunctionInitInterface {
     catalogDirectory: string;
 }
 
-class Catalog {
+export class Catalog {
     private services;
     private events;
 
@@ -22,12 +22,6 @@ class Catalog {
     }
 }
 
-export const readCatalog = (catalogDirectory: string): Catalog => {
-    let services = getAllServicesFromCatalog({catalogDirectory})();
-    let events = getAllEventsFromCatalog({catalogDirectory})();
-    return new Catalog(services, events)
-};
-
 const readMarkdownFile = (pathToFile: string) => {
     const file = fs.readFileSync(pathToFile, {
         encoding: 'utf-8',
@@ -38,7 +32,7 @@ const readMarkdownFile = (pathToFile: string) => {
     };
 };
 
-export const getAllServicesFromCatalog =
+const getAllServicesFromCatalog =
     ({catalogDirectory}: FunctionInitInterface) =>
         (): any[] => {
             const servicesDir = path.join(catalogDirectory, 'services');
@@ -49,7 +43,7 @@ export const getAllServicesFromCatalog =
             });
         };
 
-export const getServiceFromCatalog =
+const getServiceFromCatalog =
     ({catalogDirectory}: FunctionInitInterface) =>
         (seriveName: string) => {
             try {
@@ -60,7 +54,7 @@ export const getServiceFromCatalog =
             }
         };
 
-export const getEventFromCatalog =
+const getEventFromCatalog =
     ({catalogDirectory}: FunctionInitInterface) =>
         (eventName: string) => {
             let {parsed} = readMarkdownFile(path.join(catalogDirectory, 'events', eventName, 'index.md'));
@@ -75,3 +69,15 @@ const getAllEventsFromCatalog =
             const events = folders.map((folder) => getEventFromCatalog({catalogDirectory})(folder));
             return events.filter((event) => event !== null).map(({raw, ...event}: any) => event);
         };
+
+export default (catalogDirectory: string) => {
+    let allServicesFromCatalog = getAllServicesFromCatalog({catalogDirectory});
+    let allEventsFromCatalog = getAllEventsFromCatalog({catalogDirectory});
+    const readCatalog = (): Catalog => {
+        let services = allServicesFromCatalog();
+        let events = allEventsFromCatalog();
+        return new Catalog(services, events)
+    };
+
+    return {readCatalog}
+}
