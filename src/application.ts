@@ -2,8 +2,8 @@ import path from "path";
 import fs from "fs-extra";
 import matter from "gray-matter";
 import Catalog from "./domain";
-import {writeServiceToCatalog} from "@eventcatalog/utils/lib/services";
 import {AsyncAPIPluginOptions} from "./types";
+import utils from "@eventcatalog/utils";
 
 const readMarkdownFile = (pathToFile: string) => {
     const file = fs.readFileSync(pathToFile, {encoding: 'utf-8'});
@@ -42,7 +42,7 @@ export default (catalogDirectory: string) => {
     const getAllServicesFromCatalog = (catalogDirectory: string): any[] => {
         const servicesDirectory = path.join(catalogDirectory, 'services');
 
-        const getServiceFromCatalog = (sericeName: string) => readMarkdownFile(path.join(servicesDirectory, sericeName, 'index.md'));
+        const {getServiceFromCatalog} = utils({catalogDirectory})
 
         if (!fs.existsSync(servicesDirectory)) {
             return [];
@@ -78,10 +78,12 @@ export default (catalogDirectory: string) => {
     };
 
     const writeCatalog = (catalog: Catalog, options: AsyncAPIPluginOptions) => {
-        const writeService = writeServiceToCatalog({catalogDirectory});
+        const {
+            writeServiceToCatalog,
+        } = utils({catalogDirectory})
 
         catalog.state().services.forEach(service => {
-            writeService(service, options)
+            writeServiceToCatalog(service, options)
         })
     };
 
