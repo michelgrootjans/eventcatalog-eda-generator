@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import {Domain, Service, Event} from "@eventcatalog/types";
 
 export default class Catalog {
     private domains;
@@ -20,5 +21,9 @@ export default class Catalog {
         // @ts-ignore
         let events = [...this.events, ..._.flatten(this.domains.map(d => d.events))].map(e => e.data);
         return {domains, services, events};
+    }
+
+    apply({domain, service, events}: {domain: Domain | undefined; service: Service;  events: Event[] }) {
+        console.log({domain, service, events})
     }
 }

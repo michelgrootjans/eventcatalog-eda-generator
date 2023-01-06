@@ -38,14 +38,14 @@ export default (catalogDirectory: string) => {
     };
 
     const getAllServicesFromCatalog = (catalogDirectory: string): any[] => {
-        const servicesDir = path.join(catalogDirectory, 'services');
+        const servicesDirecotry = path.join(catalogDirectory, 'services');
 
-        const getServiceFromCatalog = (sericeName: string) => readMarkdownFile(path.join(servicesDir, sericeName, 'index.md'));
+        const getServiceFromCatalog = (sericeName: string) => readMarkdownFile(path.join(servicesDirecotry, sericeName, 'index.md'));
 
-        if (!fs.existsSync(servicesDir)) {
+        if (!fs.existsSync(servicesDirecotry)) {
             return [];
         }
-        const serviceNames = directoriesIn(servicesDir);
+        const serviceNames = directoriesIn(servicesDirecotry);
         return serviceNames.map((serviceName) => {
             const {raw, ...service}: any = getServiceFromCatalog(serviceName);
             return service;
@@ -69,12 +69,13 @@ export default (catalogDirectory: string) => {
         if (!fs.existsSync(catalogDirectory)) {
             return new Catalog({});
         }
-
         const domains = getAllDomainsFromCatalog();
         const services = getAllServicesFromCatalog(catalogDirectory);
         const events = getAllEventsFromCatalog(catalogDirectory);
         return new Catalog({domains, services, events})
     };
 
-    return {readCatalog}
+    const writeCatalog = (catalog: Catalog) => {}
+
+    return {readCatalog, writeCatalog}
 }

@@ -6,6 +6,8 @@ import path from 'path';
 import utils from '@eventcatalog/utils';
 
 import type {AsyncAPIPluginOptions} from './types';
+import Catalog from "./domain";
+import Application from "./application";
 
 const getServiceFromAsyncDoc = (doc: AsyncAPIDocument, {domainName}: AsyncAPIPluginOptions): Service => {
     return {
@@ -100,9 +102,11 @@ async function writeEvents(domainDirectory: string, events: Event[], options: As
     await Promise.all(eventFiles);
 }
 
-const write = async (data: { service: Service, domain: Domain | undefined, events: Event[] }, options: AsyncAPIPluginOptions, copyFrontMatter: boolean) => {
+const write = async (data: { service: Service; domain: Domain | undefined; events: Event[] }, options: AsyncAPIPluginOptions, copyFrontMatter: boolean, catalog: Catalog) => {
     const {catalogDirectory = ''} = options;
     const {service, domain, events} = data
+
+    catalog.apply(data)
 
     if (domain) {
         const domainDirectory: string = path.join(catalogDirectory, 'domains', domain.name);
@@ -136,12 +140,17 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
         throw new Error('No file provided in plugin.');
     }
 
+    let application = Application(catalogDirectory);
+    const catalog = application.readCatalog();
+
     const parsers = listOfAsyncAPIFilesToParse
         .map(readAsyncApiFile)
         .map(async document => readAsyncApiDocument(await document, options))
-        .map(async (data, index) => write(await data, options, index !== 0));
+        .map(async (data, index) => write(await data, options, index !== 0, catalog));
 
     const data = await Promise.all(parsers);
+
+    application.writeCatalog(catalog);
 
     const totalEvents = data.reduce((sum, {events}) => sum + events.length, 0);
     console.log(
