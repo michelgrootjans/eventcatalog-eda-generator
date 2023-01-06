@@ -1,14 +1,8 @@
 import path from "path";
 import fs from "fs-extra";
-import matter from "gray-matter";
 import Catalog from "./domain";
 import {AsyncAPIPluginOptions} from "./types";
 import utils from "@eventcatalog/utils";
-
-const readMarkdownFile = (pathToFile: string) => {
-    const file = fs.readFileSync(pathToFile, {encoding: 'utf-8'});
-    return matter(file);
-};
 
 const directoriesIn = (domainsDirectory: string) => fs.readdirSync(domainsDirectory);
 
@@ -18,7 +12,7 @@ export default (catalogDirectory: string) => {
     const getAllDomainsFromCatalog = (): any[] => {
         if (!fs.existsSync(domainsDirectory)) return [];
 
-        const getDomainFromCatalog = (domainName: string) => {
+        const getFullDomainFromCatalog = (domainName: string) => {
             try {
                 const domainDirectory = path.join(domainsDirectory, domainName);
                 const {getDomainFromCatalog} = utils({catalogDirectory})
@@ -35,27 +29,21 @@ export default (catalogDirectory: string) => {
 
         return directoriesIn(domainsDirectory)
             .map((domainName) => {
-            const {raw, ...domain}: any = getDomainFromCatalog(domainName);
+            const {raw, ...domain}: any = getFullDomainFromCatalog(domainName);
             return domain;
         });
     };
 
     const getAllServicesFromCatalog = (catalogDirectory: string): any[] => {
-        const {getAllServicesFromCatalog} = utils({catalogDirectory})
         if (!fs.existsSync(path.join(catalogDirectory, 'services'))) return [];
+        const {getAllServicesFromCatalog} = utils({catalogDirectory})
         return getAllServicesFromCatalog();
     };
 
     const getAllEventsFromCatalog = (catalogDirectory: string) => {
-        const eventsDirectory = path.join(catalogDirectory, 'events');
-        if (!fs.existsSync(eventsDirectory)) {
-            return [];
-        }
-        const {getEventFromCatalog} = utils({catalogDirectory})
-
-        const eventNames = directoriesIn(eventsDirectory);
-        const events = eventNames.map((eventName) => getEventFromCatalog(eventName));
-        return events.filter((event) => event !== null).map(({raw, ...event}: any) => event);
+        if (!fs.existsSync(path.join(catalogDirectory, 'events'))) return [];
+        const {getAllEventsFromCatalog} = utils({catalogDirectory})
+        return getAllEventsFromCatalog();
     };
 
 
