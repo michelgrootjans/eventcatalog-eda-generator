@@ -114,7 +114,7 @@ const write = async (data: { service: Service; domain: Domain | undefined; event
         await writeService(domainDirectory, service, options);
         await writeEvents(domainDirectory, events, options, copyFrontMatter);
     } else {
-        await writeService(catalogDirectory, service, options);
+        // await writeService(catalogDirectory, service, options);
         await writeEvents(catalogDirectory, events, options, copyFrontMatter);
     }
 
@@ -150,7 +150,7 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
 
     const data = await Promise.all(parsers);
 
-    application.writeCatalog(catalog);
+    application.writeCatalog(catalog, options);
 
     const totalEvents = data.reduce((sum, {events}) => sum + events.length, 0);
     console.log(

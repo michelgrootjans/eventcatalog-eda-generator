@@ -3,12 +3,14 @@ import plugin from '../src';
 import fs from 'fs-extra';
 import {AsyncAPIPluginOptions} from "../src/types";
 import application from "../src/application";
-import {EventCatalogConfig, LoadContext} from "@eventcatalog/types";
+import {EventCatalogConfig, LoadContext, Domain, Service, Event} from "@eventcatalog/types";
 import Catalog from "../src/domain";
 
 const TEST_OUTPUT = './tmp/catalogspec';
 
 let readCatalog: () => Catalog;
+let writeCatalog: (catalog: Catalog, options: AsyncAPIPluginOptions) => void;
+
 let options: (pathToSpecs: string[], overrides?: Partial<AsyncAPIPluginOptions>) => AsyncAPIPluginOptions;
 
 beforeAll(async () => {
@@ -22,18 +24,42 @@ let catalogDirectory = TEST_OUTPUT;
 beforeEach(() => {
     catalogDirectory = `${TEST_OUTPUT}/${expect.getState().currentTestName}`;
     options = buildOptions(catalogDirectory);
-    ({readCatalog} = application(catalogDirectory));
+    ({readCatalog, writeCatalog} = application(catalogDirectory));
 });
 
-it('empty catalog', async () => {
-    const catalog = readCatalog();
-    expect(catalog.state()).toMatchObject({
-        services: [],
-        events: [],
-    })
+describe('create', () => {
+    it('empty catalog', async () => {
+        const catalog = readCatalog();
+        expect(catalog.state()).toMatchObject({
+            domains: [],
+            services: [],
+            events: [],
+        })
+    });
+    it('one service', async () => {
+        const catalog = new Catalog({});
+        const domain = undefined;
+        const service: Service = {
+            name: 'UsersService',
+            summary: 'This service is in charge of users',
+        }
+        const events: Event[] = []
+        catalog.apply({domain, service, events});
+        writeCatalog(catalog, options([]));
+
+        expect(readCatalog().state()).toMatchObject({
+            services: [
+                {
+                    name: 'UsersService',
+                    summary: 'This service is in charge of users',
+                },
+            ],
+            events: [],
+        })
+    });
 });
 
-describe('import new', () => {
+describe('import', () => {
     it('producer', async () => {
         await plugin(context(), options([
             './assets/users-service-1.0.0.yml',
