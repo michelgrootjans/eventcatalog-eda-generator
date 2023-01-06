@@ -59,7 +59,7 @@ export default (catalogDirectory: string) => {
         if (!fs.existsSync(eventsDirectory)) {
             return [];
         }
-        const getEventFromCatalog = (eventName: string) => readMarkdownFile(path.join(eventsDirectory, eventName, 'index.md'));
+        const {getEventFromCatalog} = utils({catalogDirectory})
 
         const eventNames = directoriesIn(eventsDirectory);
         const events = eventNames.map((eventName) => getEventFromCatalog(eventName));

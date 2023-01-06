@@ -78,8 +78,6 @@ describe('import', () => {
                     name: 'UserSignedUp',
                     producers: ['UsersService'],
                     consumers: [],
-                    externalLinks: [],
-                    badges: [],
                 }
             ],
         })
@@ -102,8 +100,6 @@ describe('import', () => {
                     name: 'UserSignedUp',
                     producers: [],
                     consumers: ['AccountService'],
-                    externalLinks: [],
-                    badges: [],
                 }
             ],
         })
@@ -131,8 +127,6 @@ describe('import', () => {
                     name: 'UserSignedUp',
                     producers: ['UsersService'],
                     consumers: ['AccountService'],
-                    externalLinks: [],
-                    badges: [],
                 }
             ],
         })
@@ -160,8 +154,6 @@ describe('import', () => {
                     name: 'UserSignedUp',
                     producers: ['UsersService'],
                     consumers: ['AccountService'],
-                    externalLinks: [],
-                    badges: [],
                 }
             ],
         })
@@ -190,8 +182,6 @@ describe('import', () => {
                     name: 'UserSignedUp',
                     producers: ['UsersService'],
                     consumers: [],
-                    externalLinks: [],
-                    badges: [],
                 }
             ],
         })
