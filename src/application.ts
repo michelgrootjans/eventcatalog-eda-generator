@@ -38,14 +38,14 @@ export default (catalogDirectory: string) => {
     };
 
     const getAllServicesFromCatalog = (catalogDirectory: string): any[] => {
-        const servicesDirecotry = path.join(catalogDirectory, 'services');
+        const servicesDirectory = path.join(catalogDirectory, 'services');
 
-        const getServiceFromCatalog = (sericeName: string) => readMarkdownFile(path.join(servicesDirecotry, sericeName, 'index.md'));
+        const getServiceFromCatalog = (sericeName: string) => readMarkdownFile(path.join(servicesDirectory, sericeName, 'index.md'));
 
-        if (!fs.existsSync(servicesDirecotry)) {
+        if (!fs.existsSync(servicesDirectory)) {
             return [];
         }
-        const serviceNames = directoriesIn(servicesDirecotry);
+        const serviceNames = directoriesIn(servicesDirectory);
         return serviceNames.map((serviceName) => {
             const {raw, ...service}: any = getServiceFromCatalog(serviceName);
             return service;
