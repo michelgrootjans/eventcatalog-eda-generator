@@ -1,27 +1,24 @@
 import {Domain, Service, Event} from "@eventcatalog/types";
 
+type RawDomain = { data: any; services: any[]; events: any[]; };
+
 export default class Catalog {
     private domains: Domain[];
     private services: Service[];
     private events: Event[];
 
     constructor({domains = [], events = [], services = []}: any) {
-        // @ts-ignore
-        this.domains = domains.map(d => {
-            // @ts-ignore
-            const services = d.services.map(s => s.data);
-            // @ts-ignore
-            const events = d.events.map(s => s.data);
+        const dataFrom = (values: any[]) => values.map(s => s.data);
+
+        this.domains = domains.map((d: RawDomain) => {
             return {
                 ...d.data,
-                services,
-                events,
+                services: dataFrom(d.services),
+                events: dataFrom(d.events),
             };
         });
-        // @ts-ignore
-        this.services = services.map(s => s.data);
-        // @ts-ignore
-        this.events = events.map(s => s.data);
+        this.services = dataFrom(services);
+        this.events = dataFrom(events);
     }
 
     state() {
