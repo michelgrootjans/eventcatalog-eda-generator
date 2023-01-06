@@ -29,9 +29,9 @@ export default (catalogDirectory: string) => {
 
         return directoriesIn(domainsDirectory)
             .map((domainName) => {
-            const {raw, ...domain}: any = getFullDomainFromCatalog(domainName);
-            return domain;
-        });
+                const {raw, ...domain}: any = getFullDomainFromCatalog(domainName);
+                return domain;
+            });
     };
 
     const getAllServicesFromCatalog = (catalogDirectory: string): any[] => {
@@ -58,14 +58,20 @@ export default (catalogDirectory: string) => {
     };
 
     const writeCatalog = (catalog: Catalog, options: AsyncAPIPluginOptions) => {
-        const {
-            writeDomainToCatalog,
-            writeServiceToCatalog,
-        } = utils({catalogDirectory})
-
-        for (const {name, summary} of catalog.state().domains) {
-            writeDomainToCatalog({name, summary}, options)
+        const {writeDomainToCatalog} = utils({catalogDirectory})
+        for (const domain of catalog.state().domains) {
+            const {name, summary} = domain;
+            writeDomainToCatalog({name, summary}, options);
+            if (domain.services) {
+                const domainDirectory = path.join(domainsDirectory, domain.name);
+                for (const service of domain.services) {
+                    const {writeServiceToCatalog} = utils({catalogDirectory: domainDirectory});
+                    writeServiceToCatalog(service, options);
+                }
+            }
         }
+
+        const {writeServiceToCatalog} = utils({catalogDirectory})
         for (const service of catalog.state().services) {
             writeServiceToCatalog(service, options)
         }
