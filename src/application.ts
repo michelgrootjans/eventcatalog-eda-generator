@@ -71,9 +71,13 @@ export default (catalogDirectory: string) => {
 
     const writeCatalog = (catalog: Catalog, options: AsyncAPIPluginOptions) => {
         const {
+            writeDomainToCatalog,
             writeServiceToCatalog,
         } = utils({catalogDirectory})
 
+        for (const {name, summary} of catalog.state().domains) {
+            writeDomainToCatalog({name, summary}, options)
+        }
         for (const service of catalog.state().services) {
             writeServiceToCatalog(service, options)
         }

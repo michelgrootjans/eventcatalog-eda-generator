@@ -3,7 +3,7 @@ import plugin from '../src';
 import fs from 'fs-extra';
 import {AsyncAPIPluginOptions} from "../src/types";
 import application from "../src/application";
-import {EventCatalogConfig, LoadContext, Domain, Service, Event} from "@eventcatalog/types";
+import {Event, EventCatalogConfig, LoadContext, Service} from "@eventcatalog/types";
 import Catalog from "../src/domain";
 
 const TEST_OUTPUT = './tmp/catalogspec';

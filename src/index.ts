@@ -109,11 +109,9 @@ const write = async (data: { domain: Domain | undefined; service: Service; event
 
     if (domain) {
         const domainDirectory: string = path.join(catalogDirectory, 'domains', domain.name);
-        await writeDomain(catalogDirectory, domain, options);
         await writeService(domainDirectory, service, options);
         await writeEvents(domainDirectory, events, options, copyFrontMatter);
     } else {
-        // await writeService(catalogDirectory, service, options);
         await writeEvents(catalogDirectory, events, options, copyFrontMatter);
     }
 
