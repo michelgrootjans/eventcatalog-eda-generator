@@ -1,9 +1,9 @@
 import {Domain, Service, Event} from "@eventcatalog/types";
 
 export default class Catalog {
-    private domains;
-    private services;
-    private events;
+    private domains: Domain[];
+    private services: Service[];
+    private events: Event[];
 
     constructor({domains = [], events = [], services = []}: any) {
         // @ts-ignore
@@ -38,7 +38,7 @@ export default class Catalog {
             this.domains = [...this.domains, domain]
         } else {
             this.services = [...this.services, service];
-            this.events = [...this.services, ...events];
+            this.events = [...this.events, ...events];
         }
     }
 }
