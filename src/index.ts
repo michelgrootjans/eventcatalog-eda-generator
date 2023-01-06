@@ -98,17 +98,20 @@ async function writeEvents(domainDirectory: string, events: Event[], options: As
     await Promise.all(eventFiles);
 }
 
-const write = async (data: Promise<{ service: Service, domain: Domain | undefined, events: Event[] }>, options: AsyncAPIPluginOptions, copyFrontMatter: boolean) => {
-    const {
-        catalogDirectory = '',
-    } = options;
+const write = async (data: { service: Service, domain: Domain | undefined, events: Event[] }, options: AsyncAPIPluginOptions, copyFrontMatter: boolean) => {
+    const {catalogDirectory = ''} = options;
+    const {service, domain, events} = data
 
-    const {service, domain, events} = await data
-    const domainDirectory = domain ? path.join(catalogDirectory, 'domains', domain.name) : catalogDirectory;
+    if (domain) {
+        const domainDirectory: string = path.join(catalogDirectory, 'domains', domain.name);
+        await writeDomain(catalogDirectory, domain, options);
+        await writeService(domainDirectory, service, options);
+        await writeEvents(domainDirectory, events, options, copyFrontMatter);
+    } else {
+        await writeService(catalogDirectory, service, options);
+        await writeEvents(catalogDirectory, events, options, copyFrontMatter);
+    }
 
-    await writeDomain(catalogDirectory, domain, options);
-    await writeService(domainDirectory, service, options);
-    await writeEvents(domainDirectory, events, options, copyFrontMatter);
 
     return {service, domain, events};
 };
@@ -132,12 +135,11 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
     }
 
     const parsers = listOfAsyncAPIFilesToParse
-        .map(readFile)
-        .map(document => read(document, options))
-        .map((data, index) => write(data, options, index !== 0));
+        .map(readAsyncApiFile)
+        .map(async document => readAsyncApiDocument(await document, options))
+        .map(async (data, index) => write(await data, options, index !== 0));
 
     const data = await Promise.all(parsers);
-
 
     const totalEvents = data.reduce((sum, {events}) => sum + events.length, 0);
     console.log(
@@ -147,12 +149,11 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
 
 };
 
-async function read(docPromise: Promise<AsyncAPIDocument>, options: AsyncAPIPluginOptions): Promise<{ service: Service, domain: Domain | undefined, events: Event[] }> {
-    const document: AsyncAPIDocument = await docPromise;
+async function readAsyncApiDocument(document: AsyncAPIDocument, options: AsyncAPIPluginOptions): Promise<{ domain: Domain | undefined; service: Service; events: Event[] }> {
     const domain = getDomainFromAsyncOptions(options);
     const service = getServiceFromAsyncDoc(document, options);
     const events = getAllEventsFromAsyncDoc(document, options);
-    return {service, domain, events};
+    return {domain, service, events};
 }
 
 function getDomainFromAsyncOptions({domainName = '', domainSummary = ''}: AsyncAPIPluginOptions): Domain | undefined {
@@ -164,7 +165,7 @@ function getDomainFromAsyncOptions({domainName = '', domainSummary = ''}: AsyncA
     }
 }
 
-async function readFile(path: string) {
+async function readAsyncApiFile(path: string): Promise<AsyncAPIDocument> {
     let rawFile: string;
     try {
         rawFile = fs.readFileSync(path, 'utf-8');
