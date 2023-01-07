@@ -58,13 +58,11 @@ export default (catalogDirectory: string) => {
     };
 
     const writeCatalog = (catalog: Catalog, options: AsyncAPIPluginOptions) => {
-        const domainsDirectory = path.join(catalogDirectory, 'domains');
         const {writeDomainToCatalog} = utils({catalogDirectory})
         for (const domain of catalog.state().domains) {
             const {name, summary} = domain;
-            writeDomainToCatalog({name, summary}, options);
+            const {path: domainDirectory} = writeDomainToCatalog({name, summary}, options);
             if (domain.services) {
-                const domainDirectory = path.join(domainsDirectory, domain.name);
                 for (const service of domain.services) {
                     const {writeServiceToCatalog} = utils({catalogDirectory: domainDirectory});
                     writeServiceToCatalog(service, options);
