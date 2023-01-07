@@ -7,16 +7,16 @@ import utils from "@eventcatalog/utils";
 const directoriesIn = (domainsDirectory: string) => fs.readdirSync(domainsDirectory);
 
 export default (catalogDirectory: string) => {
-    const domainsDirectory = path.join(catalogDirectory, 'domains');
 
-    const getAllDomainsFromCatalog = (): any[] => {
+    const getAllDomainsFromCatalog = (catalogDirectory: string): any[] => {
+        const domainsDirectory = path.join(catalogDirectory, 'domains');
         if (!fs.existsSync(domainsDirectory)) return [];
 
         const getFullDomainFromCatalog = (domainName: string) => {
             try {
-                const domainDirectory = path.join(domainsDirectory, domainName);
                 const {getDomainFromCatalog} = utils({catalogDirectory})
                 const domain = getDomainFromCatalog(domainName);
+                const domainDirectory = path.join(domainsDirectory, domainName);
                 return {
                     ...domain,
                     services: getAllServicesFromCatalog(domainDirectory),
@@ -51,13 +51,14 @@ export default (catalogDirectory: string) => {
         if (!fs.existsSync(catalogDirectory)) {
             return new Catalog({});
         }
-        const domains = getAllDomainsFromCatalog();
+        const domains = getAllDomainsFromCatalog(catalogDirectory);
         const services = getAllServicesFromCatalog(catalogDirectory);
         const events = getAllEventsFromCatalog(catalogDirectory);
         return new Catalog({domains, services, events})
     };
 
     const writeCatalog = (catalog: Catalog, options: AsyncAPIPluginOptions) => {
+        const domainsDirectory = path.join(catalogDirectory, 'domains');
         const {writeDomainToCatalog} = utils({catalogDirectory})
         for (const domain of catalog.state().domains) {
             const {name, summary} = domain;

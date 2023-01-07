@@ -51,26 +51,6 @@ const getAllEventsFromAsyncDoc = (doc: AsyncAPIDocument, options: AsyncAPIPlugin
         return data.concat(eventsFromMessages);
     }, []);
 };
-
-async function writeService(catalogDirectory: string, service: Service, options: AsyncAPIPluginOptions) {
-    const {writeServiceToCatalog} = utils({catalogDirectory});
-    await writeServiceToCatalog(service, {
-        useMarkdownContentFromExistingService: true,
-        renderMermaidDiagram: options.renderMermaidDiagram,
-        renderNodeGraph: options.renderNodeGraph,
-    });
-}
-
-async function writeDomain(catalogDirectory: string, domain: Domain, options: AsyncAPIPluginOptions) {
-    const {writeDomainToCatalog} = utils({catalogDirectory});
-    const {services, events, ...domainData} = domain;
-    await writeDomainToCatalog(domainData, {
-        useMarkdownContentFromExistingDomain: true,
-        renderMermaidDiagram: options.renderMermaidDiagram,
-        renderNodeGraph: options.renderNodeGraph,
-    });
-}
-
 async function writeEvents(domainDirectory: string, events: Event[], options: AsyncAPIPluginOptions, copyFrontMatter: boolean) {
     const {writeEventToCatalog} = utils({
         catalogDirectory: domainDirectory,
@@ -109,7 +89,6 @@ const write = async (data: { domain: Domain | undefined; service: Service; event
 
     if (domain) {
         const domainDirectory: string = path.join(catalogDirectory, 'domains', domain.name);
-        // await writeService(domainDirectory, service, options);
         await writeEvents(domainDirectory, events, options, copyFrontMatter);
     } else {
         await writeEvents(catalogDirectory, events, options, copyFrontMatter);
