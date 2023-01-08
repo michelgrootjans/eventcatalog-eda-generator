@@ -79,10 +79,8 @@ function readAsyncApiDocument(document: AsyncAPIDocument, options: AsyncAPIPlugi
     return {domain, service, events};
 }
 
-async function writeEvents(domainDirectory: string, events: Event[], options: AsyncAPIPluginOptions, copyFrontMatter: boolean) {
-    const {writeEventToCatalog} = utils({
-        catalogDirectory: domainDirectory,
-    });
+async function writeEvents(catalogDirectory: string, events: Event[], options: AsyncAPIPluginOptions, copyFrontMatter: boolean) {
+    const {writeEventToCatalog} = utils({catalogDirectory});
     const eventFiles = events.map(async (event: any) => {
         const {schema, ...eventData} = event;
 
@@ -117,7 +115,7 @@ const write = async (data: { domain: Domain | undefined; service: Service; event
 
     if (domain) {
         const domainDirectory: string = path.join(catalogDirectory, 'domains', domain.name);
-        await writeEvents(domainDirectory, events, options, copyFrontMatter);
+        // await writeEvents(domainDirectory, events, options, copyFrontMatter);
     } else {
         await writeEvents(catalogDirectory, events, options, copyFrontMatter);
     }
@@ -154,7 +152,7 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
 
     await Promise.all(parsers);
 
-    application.writeCatalog(catalog, options);
+    await application.writeCatalog(catalog, options);
 
     console.log(
         `Successfully parsed ${listOfAsyncAPIFilesToParse.length} AsyncAPI file/s.`
