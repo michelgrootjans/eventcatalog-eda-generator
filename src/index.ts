@@ -128,10 +128,8 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
 
     application.writeCatalog(catalog, options);
 
-    const totalEvents = data.reduce((sum, {events}) => sum + events.length, 0);
     console.log(
-        // chalk.green(`Successfully parsed ${listOfAsyncAPIFilesToParse.length} AsyncAPI file/s. Generated ${totalEvents} events`)
-        `Successfully parsed ${listOfAsyncAPIFilesToParse.length} AsyncAPI file/s. Generated ${totalEvents} events`
+        `Successfully parsed ${listOfAsyncAPIFilesToParse.length} AsyncAPI file/s.`
     );
 
 };

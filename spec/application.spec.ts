@@ -6,7 +6,7 @@ import application from "../src/application";
 import {Event, EventCatalogConfig, LoadContext, Service} from "@eventcatalog/types";
 import Catalog from "../src/domain";
 
-const TEST_OUTPUT = './tmp/catalogspec';
+const TEST_OUTPUT = './tmp/applicationspec';
 
 let readCatalog: () => Catalog;
 let writeCatalog: (catalog: Catalog, options: AsyncAPIPluginOptions) => void;
