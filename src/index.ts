@@ -9,6 +9,26 @@ import type {AsyncAPIPluginOptions} from './types';
 import Catalog from "./domain";
 import Application from "./application";
 
+async function readAsyncApiFile(path: string): Promise<AsyncAPIDocument> {
+    let rawFile: string;
+    try {
+        rawFile = fs.readFileSync(path, 'utf-8');
+    } catch (error: any) {
+        console.error(error);
+        throw new Error(`Failed to read file with provided path`);
+    }
+    return await parse(rawFile);
+}
+
+function getDomainFromAsyncOptions({domainName = '', domainSummary = ''}: AsyncAPIPluginOptions): Domain | undefined {
+    if (domainName) {
+        return {
+            name: domainName,
+            summary: domainSummary,
+        };
+    }
+}
+
 const getServiceFromAsyncDoc = (doc: AsyncAPIDocument): Service => {
     return {
         name: doc.info().title(),
@@ -16,7 +36,7 @@ const getServiceFromAsyncDoc = (doc: AsyncAPIDocument): Service => {
     };
 };
 
-const getAllEventsFromAsyncDoc = (doc: AsyncAPIDocument, options: AsyncAPIPluginOptions): Event[] => {
+const getEventsFromAsyncDoc = (doc: AsyncAPIDocument, options: AsyncAPIPluginOptions): Event[] => {
     const {externalAsyncAPIUrl} = options;
 
     const channels = doc.channels();
@@ -51,6 +71,14 @@ const getAllEventsFromAsyncDoc = (doc: AsyncAPIDocument, options: AsyncAPIPlugin
         return data.concat(eventsFromMessages);
     }, []);
 };
+
+function readAsyncApiDocument(document: AsyncAPIDocument, options: AsyncAPIPluginOptions): { domain: Domain | undefined; service: Service; events: Event[] } {
+    const domain = getDomainFromAsyncOptions(options);
+    const service = getServiceFromAsyncDoc(document);
+    const events = getEventsFromAsyncDoc(document, options);
+    return {domain, service, events};
+}
+
 async function writeEvents(domainDirectory: string, events: Event[], options: AsyncAPIPluginOptions, copyFrontMatter: boolean) {
     const {writeEventToCatalog} = utils({
         catalogDirectory: domainDirectory,
@@ -124,7 +152,7 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
         .map(async document => readAsyncApiDocument(await document, options))
         .map(async (data, index) => write(await data, options, index !== 0, catalog));
 
-    const data = await Promise.all(parsers);
+    await Promise.all(parsers);
 
     application.writeCatalog(catalog, options);
 
@@ -133,30 +161,3 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
     );
 
 };
-
-async function readAsyncApiDocument(document: AsyncAPIDocument, options: AsyncAPIPluginOptions): Promise<{ domain: Domain | undefined; service: Service; events: Event[] }> {
-    const domain = getDomainFromAsyncOptions(options);
-    const service = getServiceFromAsyncDoc(document);
-    const events = getAllEventsFromAsyncDoc(document, options);
-    return {domain, service, events};
-}
-
-function getDomainFromAsyncOptions({domainName = '', domainSummary = ''}: AsyncAPIPluginOptions): Domain | undefined {
-    if (domainName) {
-        return {
-            name: domainName,
-            summary: domainSummary,
-        };
-    }
-}
-
-async function readAsyncApiFile(path: string): Promise<AsyncAPIDocument> {
-    let rawFile: string;
-    try {
-        rawFile = fs.readFileSync(path, 'utf-8');
-    } catch (error: any) {
-        console.error(error);
-        throw new Error(`Failed to read file with provided path`);
-    }
-    return await parse(rawFile);
-}
