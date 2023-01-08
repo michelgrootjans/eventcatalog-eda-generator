@@ -36,7 +36,7 @@ const writeDomain = ({name, summary}: Domain, catalogDirectory: string, options:
 };
 
 
-const readServices = (catalogDirectory: string): any[] => {
+const readServices = (catalogDirectory: string): Service[] => {
     if (!fs.existsSync(path.join(catalogDirectory, 'services'))) return [];
     const {getAllServicesFromCatalog} = utils({catalogDirectory})
     return getAllServicesFromCatalog();
@@ -50,7 +50,7 @@ const writeServices = (services: Service[], catalogDirectory: string, options: A
 };
 
 
-const readEvents = (catalogDirectory: string) => {
+const readEvents = (catalogDirectory: string): Event[] => {
     if (!fs.existsSync(path.join(catalogDirectory, 'events'))) return [];
     const {getAllEventsFromCatalog} = utils({catalogDirectory})
     return getAllEventsFromCatalog();
@@ -58,24 +58,23 @@ const readEvents = (catalogDirectory: string) => {
 
 
 export default (catalogDirectory: string) => {
-
     const readCatalog = (): Catalog => {
         if (!fs.existsSync(catalogDirectory)) return new Catalog({});
 
-        const domains = readDomains(catalogDirectory);
-        const services = readServices(catalogDirectory);
-        const events = readEvents(catalogDirectory);
-        return new Catalog({domains, services, events})
+        return new Catalog({
+            domains: readDomains(catalogDirectory),
+            services: readServices(catalogDirectory),
+            events: readEvents(catalogDirectory)
+        })
     };
 
     const writeCatalog = async (catalog: Catalog, options: AsyncAPIPluginOptions) => {
-        for (const domain of catalog.state().domains) {
+        const {domains, services, events} = catalog.state();
+        for (const domain of domains) {
             const domainDirectory = writeDomain(domain, catalogDirectory, options);
 
-            for (const service of (domain.services || [])) {
-                const {writeServiceToCatalog} = utils({catalogDirectory: domainDirectory});
-                writeServiceToCatalog(service, options);
-            }
+            writeServices(domain.services || [], domainDirectory, options);
+
             const {writeEventToCatalog} = utils({
                 catalogDirectory: domainDirectory,
             });
@@ -106,7 +105,7 @@ export default (catalogDirectory: string) => {
 
         }
 
-        writeServices(catalog.state().services, catalogDirectory, options);
+        writeServices(services, catalogDirectory, options);
     };
 
     return {readCatalog, writeCatalog}
