@@ -56,13 +56,13 @@ const readEvents = (catalogDirectory: string): Event[] => {
     return getAllEventsFromCatalog();
 };
 
-async function writeEvents(events: Event[], catalogDirectory: string, options: AsyncAPIPluginOptions) {
+const writeEvents = (events: Event[], catalogDirectory: string, options: AsyncAPIPluginOptions) => {
     const {writeEventToCatalog} = utils({catalogDirectory});
 
-    const eventFiles = (events).map(async (event: Event) => {
+    const eventFiles = (events).map((event: Event) => {
         const {schema, ...eventData} = event;
 
-        await writeEventToCatalog(eventData, {
+        writeEventToCatalog(eventData, {
             useMarkdownContentFromExistingEvent: true,
             versionExistingEvent: options.versionEvents,
             renderMermaidDiagram: options.renderMermaidDiagram,
@@ -79,14 +79,11 @@ async function writeEvents(events: Event[], catalogDirectory: string, options: A
             },
         });
     });
-
-    // write all events to folders
-    await Promise.all(eventFiles);
-}
+};
 
 export default (catalogDirectory: string) => {
     const readCatalog = (): Catalog => {
-        if (!fs.existsSync(catalogDirectory)) return new Catalog({});
+        if (!fs.existsSync(catalogDirectory)) return new Catalog();
 
         return new Catalog({
             domains: readDomains(catalogDirectory),
@@ -95,13 +92,12 @@ export default (catalogDirectory: string) => {
         })
     };
 
-    const writeCatalog = async (catalog: Catalog, options: AsyncAPIPluginOptions) => {
+    const writeCatalog = (catalog: Catalog, options: AsyncAPIPluginOptions) => {
         const {domains, services, events} = catalog.state();
         for (const domain of domains) {
             const domainDirectory = writeDomain(domain, catalogDirectory, options);
             writeServices(domain.services || [], domainDirectory, options);
-            await writeEvents(domain.events || [], domainDirectory, options);
-
+            writeEvents(domain.events || [], domainDirectory, options);
         }
 
         writeServices(services, catalogDirectory, options);

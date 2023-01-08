@@ -1,13 +1,14 @@
 import {Domain, Service, Event} from "@eventcatalog/types";
 
 type RawDomain = { data: any; services: any[]; events: any[]; };
+const emptyCatalog = {domains: [], services: [], events: []};
 
 export default class Catalog {
     private domains: Domain[];
     private services: Service[];
     private events: Event[];
 
-    constructor({domains = [], events = [], services = []}: any) {
+    constructor({domains = [], events = [], services = []}: any = emptyCatalog) {
         const dataFrom = (values: any[]) => values.map(s => s.data);
 
         this.domains = domains.map((d: RawDomain) => {
@@ -22,10 +23,11 @@ export default class Catalog {
     }
 
     state() {
-        let domains = this.domains;
-        let services = this.services;
-        let events = this.events;
-        return {domains, services, events};
+        return {
+            domains: this.domains,
+            services: this.services,
+            events: this.events
+        };
     }
 
     apply({domain, service, events}: { domain: Domain | undefined; service: Service; events: Event[] }) {
