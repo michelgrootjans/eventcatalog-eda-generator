@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import Catalog from "./domain";
 import {AsyncAPIPluginOptions} from "./types";
 import utils from "@eventcatalog/utils";
-import {Domain, Service} from "@eventcatalog/types";
+import {Domain, Service, Event} from "@eventcatalog/types";
 
 const directoriesIn = (domainsDirectory: string) => fs.readdirSync(domainsDirectory);
 
@@ -56,6 +56,33 @@ const readEvents = (catalogDirectory: string): Event[] => {
     return getAllEventsFromCatalog();
 };
 
+async function writeEvents(events: Event[], catalogDirectory: string, options: AsyncAPIPluginOptions) {
+    const {writeEventToCatalog} = utils({catalogDirectory});
+
+    const eventFiles = (events).map(async (event: Event) => {
+        const {schema, ...eventData} = event;
+
+        await writeEventToCatalog(eventData, {
+            useMarkdownContentFromExistingEvent: true,
+            versionExistingEvent: options.versionEvents,
+            renderMermaidDiagram: options.renderMermaidDiagram,
+            renderNodeGraph: options.renderNodeGraph,
+            frontMatterToCopyToNewVersions: {
+                consumers: true,
+                producers: true,
+                // owners: true,
+                // externalLinks: true
+            },
+            schema: {
+                extension: 'json',
+                fileContent: schema,
+            },
+        });
+    });
+
+    // write all events to folders
+    await Promise.all(eventFiles);
+}
 
 export default (catalogDirectory: string) => {
     const readCatalog = (): Catalog => {
@@ -72,36 +99,8 @@ export default (catalogDirectory: string) => {
         const {domains, services, events} = catalog.state();
         for (const domain of domains) {
             const domainDirectory = writeDomain(domain, catalogDirectory, options);
-
             writeServices(domain.services || [], domainDirectory, options);
-
-            const {writeEventToCatalog} = utils({
-                catalogDirectory: domainDirectory,
-            });
-            const eventFiles = (domain.events || []).map(async (event: any) => {
-                const {schema, ...eventData} = event;
-
-                await writeEventToCatalog(eventData, {
-                    useMarkdownContentFromExistingEvent: true,
-                    versionExistingEvent: options.versionEvents,
-                    renderMermaidDiagram: options.renderMermaidDiagram,
-                    renderNodeGraph: options.renderNodeGraph,
-                    frontMatterToCopyToNewVersions: {
-                        // only do consumers and producers if it's not the first file.
-                        consumers: true,
-                        producers: true,
-                        // owners: true,
-                        // externalLinks: true
-                    },
-                    schema: {
-                        extension: 'json',
-                        fileContent: schema,
-                    },
-                });
-            });
-
-            // write all events to folders
-            await Promise.all(eventFiles);
+            await writeEvents(domain.events || [], domainDirectory, options);
 
         }
 
