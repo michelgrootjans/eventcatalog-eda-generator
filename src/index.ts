@@ -2,10 +2,9 @@
 import type {Domain, Event, LoadContext, Service} from '@eventcatalog/types';
 import {AsyncAPIDocument, parse} from '@asyncapi/parser';
 import fs from 'fs-extra';
-import path from 'path';
 import utils from '@eventcatalog/utils';
 
-import type {AsyncAPIPluginOptions} from './types';
+import type {AsyncApiDocument, AsyncApiDomain, AsyncAPIPluginOptions, AsyncApiService} from './types';
 import Catalog from "./domain";
 import Application from "./application";
 
@@ -20,7 +19,7 @@ async function readAsyncApiFile(path: string): Promise<AsyncAPIDocument> {
     return await parse(rawFile);
 }
 
-function getDomainFromAsyncOptions({domainName = '', domainSummary = ''}: AsyncAPIPluginOptions): Domain | undefined {
+function getDomainFromAsyncOptions({domainName = '', domainSummary = ''}: AsyncAPIPluginOptions): AsyncApiDomain | undefined {
     if (domainName) {
         return {
             name: domainName,
@@ -29,7 +28,7 @@ function getDomainFromAsyncOptions({domainName = '', domainSummary = ''}: AsyncA
     }
 }
 
-const getServiceFromAsyncDoc = (doc: AsyncAPIDocument): Service => {
+const getServiceFromAsyncDoc = (doc: AsyncAPIDocument): AsyncApiService => {
     return {
         name: doc.info().title(),
         summary: doc.info().description() || '',
@@ -72,7 +71,7 @@ const getEventsFromAsyncDoc = (doc: AsyncAPIDocument, options: AsyncAPIPluginOpt
     }, []);
 };
 
-function readAsyncApiDocument(document: AsyncAPIDocument, options: AsyncAPIPluginOptions): { domain: Domain | undefined; service: Service; events: Event[] } {
+function readAsyncApiDocument(document: AsyncAPIDocument, options: AsyncAPIPluginOptions): AsyncApiDocument {
     const domain = getDomainFromAsyncOptions(options);
     const service = getServiceFromAsyncDoc(document);
     const events = getEventsFromAsyncDoc(document, options);
@@ -81,7 +80,7 @@ function readAsyncApiDocument(document: AsyncAPIDocument, options: AsyncAPIPlugi
 
 function writeEvents(catalogDirectory: string, events: Event[], options: AsyncAPIPluginOptions, copyFrontMatter: boolean) {
     const {writeEventToCatalog} = utils({catalogDirectory});
-    const eventFiles = events.map((event: any) => {
+    events.map((event: any) => {
         const {schema, ...eventData} = event;
 
         writeEventToCatalog(eventData, {
@@ -104,7 +103,7 @@ function writeEvents(catalogDirectory: string, events: Event[], options: AsyncAP
     });
 }
 
-const write = (data: { domain: Domain | undefined; service: Service; events: Event[] }, options: AsyncAPIPluginOptions, copyFrontMatter: boolean, catalog: Catalog) => {
+const write = (data: AsyncApiDocument, options: AsyncAPIPluginOptions, copyFrontMatter: boolean, catalog: Catalog) => {
     const {catalogDirectory = ''} = options;
     const {domain, service, events} = data
 

@@ -1,4 +1,5 @@
 import {Domain, Service, Event} from "@eventcatalog/types";
+import {AsyncApiDocument} from "./types";
 
 type RawDomain = { data: any; services: any[]; events: any[]; };
 const emptyCatalog = {domains: [], services: [], events: []};
@@ -30,11 +31,14 @@ export default class Catalog {
         };
     }
 
-    apply({domain, service, events}: { domain: Domain | undefined; service: Service; events: Event[] }) {
+    apply({domain, service, events}: AsyncApiDocument) {
         if (domain) {
-            domain.services = [service]
-            domain.events = events
-            this.domains = [...this.domains, domain]
+            const newDomain: Domain = {
+                ...domain,
+                services: [service],
+                events: events
+            }
+            this.domains = [...this.domains, newDomain]
         } else {
             this.services = [...this.services, service];
             this.events = [...this.events, ...events];
