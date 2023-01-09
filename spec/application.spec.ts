@@ -25,6 +25,8 @@ beforeEach(() => {
     catalogDirectory = `${TEST_OUTPUT}/${expect.getState().currentTestName}`;
     options = buildOptions(catalogDirectory);
     ({readCatalog, writeCatalog} = application(catalogDirectory));
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
 });
 
 describe('create', () => {

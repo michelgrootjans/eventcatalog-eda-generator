@@ -18,6 +18,8 @@ beforeAll(async () => {
 let catalogDirectory = TEST_OUTPUT;
 beforeEach(() => {
     catalogDirectory = `${TEST_OUTPUT}/catalog-${uuid()}`;
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
 });
 
 it('simple import', async () => {
