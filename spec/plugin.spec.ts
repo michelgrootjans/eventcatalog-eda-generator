@@ -164,8 +164,8 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
             name: 'UserSignedUp',
             version: '0.0.1',
             summary: 'Old example of an event that should be versioned',
-            producers: ['Service A'],
-            consumers: ['Service B'],
+            producers: ['ServiceA'],
+            consumers: ['ServiceB'],
             owners: ['dBoyne'],
           };
 
@@ -192,8 +192,10 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               name: UserSignedUp
               summary: null
               version: 1.0.0
-              producers: []
+              producers:
+                  - ServiceA
               consumers:
+                  - ServiceB
                   - AccountService
               externalLinks: []
               badges: []
@@ -215,8 +217,8 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
             name: 'UserSignedUp',
             version: '0.0.1',
             summary: 'Old example of an event that should be versioned',
-            producers: ['Service A'],
-            consumers: ['Service B'],
+            producers: ['ServiceA'],
+            consumers: ['ServiceB'],
             owners: ['dBoyne'],
           };
 
@@ -237,8 +239,10 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               name: UserSignedUp
               summary: null
               version: 1.0.0
-              producers: []
+              producers:
+                  - ServiceA
               consumers:
+                  - ServiceB
                   - AccountService
               externalLinks: []
               badges: []
@@ -258,8 +262,8 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
             name: 'UserSignedUp',
             version: '0.0.1',
             summary: 'Old example of an event that should be versioned',
-            producers: ['Service A'],
-            consumers: ['Service B'],
+            producers: ['ServiceA'],
+            consumers: ['ServiceB'],
             owners: ['dBoyne'],
           };
 
@@ -286,8 +290,10 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               name: UserSignedUp
               summary: null
               version: 1.0.0
-              producers: []
+              producers:
+                  - ServiceA
               consumers:
+                  - ServiceB
                   - AccountService
               externalLinks: []
               badges: []
@@ -311,8 +317,8 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
             name: 'UserSignedUp',
             version: '0.0.1',
             summary: 'Old example of an event that should be versioned',
-            producers: ['Service A'],
-            consumers: ['Service B'],
+            producers: ['ServiceA'],
+            consumers: ['ServiceB'],
             owners: ['dBoyne'],
           };
 
@@ -336,8 +342,10 @@ describe('eventcatalog-plugin-generator-asyncapi', () => {
               name: UserSignedUp
               summary: null
               version: 1.0.0
-              producers: []
+              producers:
+                  - ServiceA
               consumers:
+                  - ServiceB
                   - AccountService
               externalLinks:
                   - {label: 'View event in AsyncAPI', url: 'https://eventcatalog.dev/events#message-UserSignedUp'}

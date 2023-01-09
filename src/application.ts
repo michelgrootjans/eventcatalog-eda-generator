@@ -68,8 +68,8 @@ const writeEvents = (events: Event[], catalogDirectory: string, options: AsyncAP
             renderMermaidDiagram: options.renderMermaidDiagram,
             renderNodeGraph: options.renderNodeGraph,
             frontMatterToCopyToNewVersions: {
-                consumers: true,
-                producers: true,
+                consumers: false,
+                producers: false,
                 // owners: true,
                 // externalLinks: true
             },
@@ -93,7 +93,8 @@ export default (catalogDirectory: string) => {
     };
 
     const writeCatalog = (catalog: Catalog, options: AsyncAPIPluginOptions) => {
-        const {domains, services, events} = catalog.state();
+        const {domains, services} = catalog.state();
+        const {events} = catalog.changes();
         for (const domain of domains) {
             const domainDirectory = writeDomain(domain, catalogDirectory, options);
             writeServices(domain.services || [], domainDirectory, options);
@@ -101,7 +102,7 @@ export default (catalogDirectory: string) => {
         }
 
         writeServices(services, catalogDirectory, options);
-        // writeEvents(events, catalogDirectory, options);
+        writeEvents(events, catalogDirectory, options);
     };
 
     return {readCatalog, writeCatalog}

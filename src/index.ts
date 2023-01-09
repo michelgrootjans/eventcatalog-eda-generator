@@ -111,7 +111,7 @@ const write = (data: AsyncApiDocument, options: AsyncAPIPluginOptions, copyFront
 
     if (domain) {
     } else {
-        writeEvents(catalogDirectory, events, options, copyFrontMatter);
+        // writeEvents(catalogDirectory, events, options, copyFrontMatter);
     }
 
     return {service, domain, events};
