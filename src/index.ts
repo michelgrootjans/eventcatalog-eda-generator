@@ -4,7 +4,7 @@ import {AsyncAPIDocument, parse} from '@asyncapi/parser';
 import fs from 'fs-extra';
 import utils from '@eventcatalog/utils';
 
-import type {AsyncApiDocument, AsyncApiDomain, AsyncAPIPluginOptions, AsyncApiService} from './types';
+import type {AsyncApiDocument, AsyncApiDomain, AsyncApiEvent, AsyncAPIPluginOptions, AsyncApiService} from './types';
 import Catalog from "./domain";
 import Application from "./application";
 
@@ -35,7 +35,7 @@ const getServiceFromAsyncDoc = (doc: AsyncAPIDocument): AsyncApiService => {
     };
 };
 
-const getEventsFromAsyncDoc = (doc: AsyncAPIDocument, options: AsyncAPIPluginOptions): Event[] => {
+const getEventsFromAsyncDoc = (doc: AsyncAPIDocument, options: AsyncAPIPluginOptions): AsyncApiEvent[] => {
     const {externalAsyncAPIUrl} = options;
 
     const channels = doc.channels();
@@ -78,7 +78,7 @@ function readAsyncApiDocument(document: AsyncAPIDocument, options: AsyncAPIPlugi
     return {domain, service, events};
 }
 
-function writeEvents(catalogDirectory: string, events: Event[], options: AsyncAPIPluginOptions, copyFrontMatter: boolean) {
+function writeEvents(catalogDirectory: string, events: AsyncApiEvent[], options: AsyncAPIPluginOptions, copyFrontMatter: boolean) {
     const {writeEventToCatalog} = utils({catalogDirectory});
     events.map((event: any) => {
         const {schema, ...eventData} = event;

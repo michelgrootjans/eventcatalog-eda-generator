@@ -1,7 +1,7 @@
 import path from 'path';
 import plugin from '../src';
 import fs from 'fs-extra';
-import {AsyncAPIPluginOptions} from "../src/types";
+import {AsyncApiEvent, AsyncAPIPluginOptions} from "../src/types";
 import application from "../src/application";
 import {Event, EventCatalogConfig, LoadContext, Service} from "@eventcatalog/types";
 import Catalog from "../src/domain";
@@ -45,8 +45,7 @@ describe('create', () => {
             name: 'UsersService',
             summary: 'This service is in charge of users',
         }
-        const events: Event[] = []
-        catalog.apply({domain, service, events});
+        catalog.apply({domain, service, events: []});
         writeCatalog(catalog, options([]));
 
         expect(readCatalog().state()).toMatchObject({

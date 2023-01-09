@@ -11,7 +11,11 @@ export type AsyncAPIPluginOptions = {
   catalogDirectory?: string,
 };
 
-export type AsyncApiDocument = { domain: AsyncApiDomain | undefined; service: AsyncApiService; events: Event[] };
+export type AsyncApiDocument = {
+  domain: AsyncApiDomain | undefined;
+  service: AsyncApiService;
+  events: AsyncApiEvent[];
+};
 
 export type AsyncApiDomain = {
   name: string,

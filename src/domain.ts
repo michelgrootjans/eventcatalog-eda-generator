@@ -36,12 +36,16 @@ export default class Catalog {
             const newDomain: Domain = {
                 ...domain,
                 services: [service],
-                events: events
             }
+            // @ts-ignore
+            newDomain.events = events;
             this.domains = [...this.domains, newDomain]
         } else {
             this.services = [...this.services, service];
-            this.events = [...this.events, ...events];
+            for (const event of events) {
+                // @ts-ignore
+                this.events.push(event);
+            }
         }
     }
 }
