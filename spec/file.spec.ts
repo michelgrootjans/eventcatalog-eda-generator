@@ -44,7 +44,7 @@ it('new version', async () => {
     ])
 });
 
-xit('double import with common event', async () => {
+it('double import with common event', async () => {
     await importSpecs(catalogDirectory, [
         './assets/account-service-1.0.0.yml',
         './assets/users-service-1.0.0.yml',
@@ -56,7 +56,7 @@ xit('double import with common event', async () => {
     ])
 });
 
-xit('double import with common event - reversed', async () => {
+it('double import with common event - reversed', async () => {
     await importSpecs(catalogDirectory, [
         './assets/users-service-1.0.0.yml',
         './assets/account-service-1.0.0.yml',
