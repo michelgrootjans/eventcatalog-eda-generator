@@ -59,7 +59,7 @@ const readEvents = (catalogDirectory: string): Event[] => {
 const writeEvents = (events: Event[], catalogDirectory: string, options: AsyncAPIPluginOptions) => {
     const {writeEventToCatalog} = utils({catalogDirectory});
 
-    const eventFiles = (events).map((event: Event) => {
+    for (const event of events) {
         const {schema, ...eventData} = event;
 
         writeEventToCatalog(eventData, {
@@ -78,7 +78,7 @@ const writeEvents = (events: Event[], catalogDirectory: string, options: AsyncAP
                 fileContent: schema,
             },
         });
-    });
+    }
 };
 
 export default (catalogDirectory: string) => {
@@ -101,6 +101,7 @@ export default (catalogDirectory: string) => {
         }
 
         writeServices(services, catalogDirectory, options);
+        // writeEvents(events, catalogDirectory, options);
     };
 
     return {readCatalog, writeCatalog}
