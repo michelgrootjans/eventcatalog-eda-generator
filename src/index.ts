@@ -4,7 +4,6 @@ import {AsyncAPIDocument, parse} from '@asyncapi/parser';
 import fs from 'fs-extra';
 
 import type {AsyncApiDocument, AsyncApiDomain, AsyncApiEvent, AsyncAPIPluginOptions, AsyncApiService} from './types';
-import Catalog from "./domain";
 import Application from "./application";
 
 async function readAsyncApiFile(path: string): Promise<AsyncAPIDocument> {
@@ -76,13 +75,6 @@ function readAsyncApiDocument(document: AsyncAPIDocument, options: AsyncAPIPlugi
     const events = getEventsFromAsyncDoc(document, options);
     return {domain, service, events};
 }
-const write = (data: AsyncApiDocument, options: AsyncAPIPluginOptions, copyFrontMatter: boolean, catalog: Catalog) => {
-    const {domain, service, events} = data
-
-    catalog.apply(data)
-
-    return {service, domain, events};
-};
 
 export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
     options = {
@@ -108,7 +100,7 @@ export default async (context: LoadContext, options: AsyncAPIPluginOptions) => {
     const parsers = listOfAsyncAPIFilesToParse
         .map(readAsyncApiFile)
         .map(async document => readAsyncApiDocument(await document, options))
-        .map(async (data, index) => write(await data, options, index !== 0, catalog));
+        .map(async (data) => catalog.apply(await data));
 
     await Promise.all(parsers);
 
