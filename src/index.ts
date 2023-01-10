@@ -1,8 +1,7 @@
 // import chalk from 'chalk';
-import type {Domain, Event, LoadContext, Service} from '@eventcatalog/types';
+import type {LoadContext} from '@eventcatalog/types';
 import {AsyncAPIDocument, parse} from '@asyncapi/parser';
 import fs from 'fs-extra';
-import utils from '@eventcatalog/utils';
 
 import type {AsyncApiDocument, AsyncApiDomain, AsyncApiEvent, AsyncAPIPluginOptions, AsyncApiService} from './types';
 import Catalog from "./domain";
@@ -77,42 +76,10 @@ function readAsyncApiDocument(document: AsyncAPIDocument, options: AsyncAPIPlugi
     const events = getEventsFromAsyncDoc(document, options);
     return {domain, service, events};
 }
-
-function writeEvents(catalogDirectory: string, events: AsyncApiEvent[], options: AsyncAPIPluginOptions, copyFrontMatter: boolean) {
-    const {writeEventToCatalog} = utils({catalogDirectory});
-    events.map((event: any) => {
-        const {schema, ...eventData} = event;
-
-        writeEventToCatalog(eventData, {
-            useMarkdownContentFromExistingEvent: true,
-            versionExistingEvent: options.versionEvents,
-            renderMermaidDiagram: options.renderMermaidDiagram,
-            renderNodeGraph: options.renderNodeGraph,
-            frontMatterToCopyToNewVersions: {
-                // only do consumers and producers if it's not the first file.
-                consumers: copyFrontMatter,
-                producers: copyFrontMatter,
-                // owners: true,
-                // externalLinks: true
-            },
-            schema: {
-                extension: 'json',
-                fileContent: schema,
-            },
-        });
-    });
-}
-
 const write = (data: AsyncApiDocument, options: AsyncAPIPluginOptions, copyFrontMatter: boolean, catalog: Catalog) => {
-    const {catalogDirectory = ''} = options;
     const {domain, service, events} = data
 
     catalog.apply(data)
-
-    if (domain) {
-    } else {
-        // writeEvents(catalogDirectory, events, options, copyFrontMatter);
-    }
 
     return {service, domain, events};
 };

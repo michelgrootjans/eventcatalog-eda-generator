@@ -1,9 +1,9 @@
 import path from 'path';
 import plugin from '../src';
 import fs from 'fs-extra';
-import {AsyncApiEvent, AsyncAPIPluginOptions} from "../src/types";
+import {AsyncAPIPluginOptions} from "../src/types";
 import application from "../src/application";
-import {Event, EventCatalogConfig, LoadContext, Service} from "@eventcatalog/types";
+import {EventCatalogConfig, LoadContext, Service} from "@eventcatalog/types";
 import Catalog from "../src/domain";
 
 const TEST_OUTPUT = './tmp/applicationspec';

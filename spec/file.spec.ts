@@ -4,7 +4,6 @@ import plugin from '../src';
 import fs from 'fs-extra';
 import {glob} from 'glob';
 import {AsyncAPIPluginOptions} from "../src/types";
-import utils from "@eventcatalog/utils";
 
 const TEST_OUTPUT = './tmp/filespec';
 
